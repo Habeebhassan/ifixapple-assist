@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iFixApple Assist - Implementation Roadmap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #d2d2d7;
+            border-radius: 10px;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .nav-item-active {
+            background-color: #0071e3;
+            color: white;
+            box-shadow: 0 4px 14px rgba(0, 113, 227, 0.3);
+        }
+        .nav-item-inactive {
+            background-color: white;
+            color: #1d1d1f;
+            border: 1px solid #e5e5ea;
+        }
+        .nav-item-inactive:hover {
+            background-color: #f5f5f7;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Chosen Palette: Apple Minimalist Light (Off-white #f5f5f7 background, deep gray #1d1d1f text, signature blue #0071e3 accents, stark white #ffffff cards) -->
+
+    <!-- Application Structure Plan: The SPA uses a dashboard-style, two-column layout. The left column acts as an interactive timeline/navigation menu, representing the chronological phases of the roadmap. The right column is dynamic, displaying detailed tasks, goals, and a visual time-allocation chart for the selected phase. This structure was chosen because it allows project managers to grasp the entire timeline at a glance while drilling down into specific implementation details without losing context or navigating away from the page. -->
+
+    <!-- Visualization & Content Choices: The source roadmap is heavily chronological and task-based. 1. Navigation/Timeline: Converts the markdown list into a selectable sidebar (Goal: Organize/Navigate -> Method: Interactive List -> Justification: Shows progression clearly). 2. Time Allocation Chart: Uses a Donut chart (Chart.js) to show how development days are distributed across phases (Goal: Compare/Inform -> Method: Donut Chart -> Justification: Instantly communicates which phases require the most effort). 3. Task Checklist: Interactive checkboxes for each phase (Goal: Engage/Inform -> Method: Dynamic HTML list -> Justification: Allows users to simulate progress tracking and interact with the data). -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <header class="w-full glass-panel sticky top-0 z-50 border-b border-gray-200 shadow-sm px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">🍎</span>
+                <h1 class="text-xl font-semibold tracking-tight">iFixApple Assist <span class="text-gray-500 font-normal">Roadmap Explorer</span></h1>
+            </div>
+            <div class="text-sm font-medium text-gray-500">
+                Interactive Implementation Plan
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <section class="lg:col-span-4 flex flex-col space-y-4">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-lg font-semibold mb-2">Project Overview</h2>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    This interactive dashboard translates the master implementation roadmap for the iFixApple Assist platform. Use the timeline below to navigate through the 7 distinct phases of development, ranging from environment foundation to post-launch maintenance. Selecting a phase will update the details panel to reveal specific goals and technical tasks.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex-grow flex flex-col">
+                <h3 class="text-md font-semibold text-gray-400 uppercase tracking-wider text-xs mb-4">Implementation Timeline</h3>
+                <div id="timeline-container" class="flex flex-col space-y-3 custom-scrollbar overflow-y-auto pr-2 pb-4">
+                </div>
+            </div>
+        </section>
+
+        <section class="lg:col-span-8 flex flex-col space-y-8">
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 min-h-[400px] flex flex-col transition-all duration-300 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -z-10"></div>
+                
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold mb-2">Phase Details & Execution</h2>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        This section dynamically displays the core objectives and actionable steps for the selected phase. Interact with the checklist to review the granular tasks required, such as setting up the Dify AI engine, configuring the Next.js frontend, or establishing the Supabase database.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between mb-2">
+                    <span id="detail-phase-badge" class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold uppercase tracking-wide">Phase</span>
+                    <span id="detail-days" class="text-sm font-medium text-gray-500 flex items-center"><span class="mr-1">⏱️</span> Days</span>
+                </div>
+                
+                <h2 id="detail-title" class="text-3xl font-bold tracking-tight text-gray-900 mb-4">Select a phase</h2>
+                
+                <div class="bg-[#f5f5f7] rounded-2xl p-5 mb-6 border border-gray-200">
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Primary Goal</h4>
+                    <p id="detail-goal" class="text-md font-medium text-gray-800 leading-snug">Choose a phase from the timeline to view its objective.</p>
+                </div>
+
+                <h4 class="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4">Task Breakdown</h4>
+                <div id="detail-tasks" class="flex flex-col space-y-3">
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8">
+                <div class="w-full md:w-1/2">
+                    <h2 class="text-lg font-semibold mb-2">Time Allocation Analysis</h2>
+                    <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                        This visualization illustrates the distribution of development days across the defined project phases. It highlights where the bulk of engineering effort is concentrated, ensuring alignment with project milestones and resource planning.
+                    </p>
+                    <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                        <div class="text-xs text-blue-800 font-semibold uppercase tracking-wider mb-1">Total Estimated Effort</div>
+                        <div class="text-2xl font-bold text-blue-600" id="total-days-metric">0 Days</div>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2 flex justify-center">
+                    <div class="chart-container">
+                        <canvas id="allocationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const roadmapData = [
+            {
+                id: 1,
+                phase: "Phase 1",
+                title: "Environment & Foundation",
+                days: "Days 1-2",
+                duration: 2,
+                icon: "🛠️",
+                goal: "Establish specific folder structures, implement version control, and install base dependencies.",
+                tasks: [
+                    "Project Initialization: Create monorepo structure (frontend/, backend/, docs/).",
+                    "Database Setup (Supabase): Define initial SQL Schema (users, repair_tickets, device_history, trade_in_offers).",
+                    "Backend Scaffolding (FastAPI): Initialize Python venv, install core dependencies.",
+                    "Frontend Scaffolding (Next.js): Setup TypeScript, Tailwind CSS, App Router, and UI libraries."
+                ]
+            },
+            {
+                id: 2,
+                phase: "Phase 2",
+                title: "The 'Brain' - AI & Backend",
+                days: "Days 3-5",
+                duration: 3,
+                icon: "🧠",
+                goal: "Develop a working API capable of processing intent and returning mocked or real AI responses.",
+                tasks: [
+                    "Dify.ai Setup (Agent Engine): Upload Knowledge Base, create Router logic, generate API Key.",
+                    "FastAPI Agent Endpoints: Create POST /api/chat proxy endpoint for business logic.",
+                    "Tool Integration (The Detective): Implement imei_tool.py for device status checks."
+                ]
+            },
+            {
+                id: 3,
+                phase: "Phase 3",
+                title: "The 'Face' - Frontend UI",
+                days: "Days 6-10",
+                duration: 5,
+                icon: "📱",
+                goal: "Construct a visually stunning, 'Apple-aesthetic' user interface.",
+                tasks: [
+                    "Design System Implementation: Configure tailwind.config.ts, build base UI components.",
+                    "Landing Page: Build Hero Section and Services Grid.",
+                    "The Immersive Chat Interface: Build ChatWindow with 'Rich UI' rendering capabilities.",
+                    "Device Status Dashboard: Create Customer View showing device list and live ticket status."
+                ]
+            },
+            {
+                id: 4,
+                phase: "Phase 4",
+                title: "Integration & State",
+                days: "Days 11-13",
+                duration: 3,
+                icon: "🔗",
+                goal: "Connect the Frontend to the Backend and implement core business logic.",
+                tasks: [
+                    "API Client: Create frontend services to connect Chat UI to FastAPI endpoint.",
+                    "Authentication: Implement Supabase Auth UI helpers for Login/Signup.",
+                    "Booking & Trade-In Logic: Save AI-suggested tickets and trade-in offers to the database."
+                ]
+            },
+            {
+                id: 5,
+                phase: "Phase 5",
+                title: "Admin & Internal Tools",
+                days: "Days 14-16",
+                duration: 3,
+                icon: "🔐",
+                goal: "Build the control center for shop owners to manage operations.",
+                tasks: [
+                    "Admin Dashboard (/admin): Create Ticket Kanban board and Trade-In Review list.",
+                    "AI Monitoring: Build log view to monitor user interactions with the LLM."
+                ]
+            },
+            {
+                id: 6,
+                phase: "Phase 6",
+                title: "Testing & Deployment",
+                days: "Day 17+",
+                duration: 2,
+                icon: "🚀",
+                goal: "Ensure reliability, perform quality assurance, and push the application live.",
+                tasks: [
+                    "End-to-End Testing: Test full loop from landing to admin database entry.",
+                    "Mobile Responsiveness Check: Verify chat modal and layouts on mobile devices.",
+                    "Backend Deployment: Dockerize FastAPI app and deploy to Render/Railway.",
+                    "Frontend Deployment: Connect GitHub repo to Vercel."
+                ]
+            },
+            {
+                id: 7,
+                phase: "Phase 7",
+                title: "Post-Launch Maintenance",
+                days: "Ongoing",
+                duration: 1,
+                icon: "⚙️",
+                goal: "Monitor system health and update dynamic data variables.",
+                tasks: [
+                    "Monitor Dify Credits: Ensure AI token limits are maintained.",
+                    "Update Prices: Conduct weekly updates of the Valuation database."
+                ]
+            }
+        ];
+
+        let activePhaseId = 1;
+        let allocationChartInstance = null;
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '';
+
+            roadmapData.forEach(item => {
+                const btn = document.createElement('button');
+                const isActive = item.id === activePhaseId;
+                
+                btn.className = `w-full text-left px-4 py-4 rounded-2xl transition-all duration-200 flex items-start space-x-3 cursor-pointer outline-none focus:ring-2 focus:ring-blue-400 ${isActive ? 'nav-item-active' : 'nav-item-inactive'}`;
+                
+                btn.onclick = () => {
+                    activePhaseId = item.id;
+                    renderTimeline();
+                    updateDetailsPanel();
+                };
+
+                const iconDiv = document.createElement('div');
+                iconDiv.className = `text-xl mt-0.5 ${isActive ? 'opacity-100' : 'opacity-70'}`;
+                iconDiv.textContent = item.icon;
+
+                const textDiv = document.createElement('div');
+                textDiv.className = 'flex flex-col';
+                
+                const phaseLabel = document.createElement('span');
+                phaseLabel.className = `text-xs font-bold uppercase tracking-wider mb-1 ${isActive ? 'text-blue-100' : 'text-gray-400'}`;
+                phaseLabel.textContent = item.phase;
+
+                const titleLabel = document.createElement('span');
+                titleLabel.className = `text-sm font-semibold leading-tight ${isActive ? 'text-white' : 'text-gray-800'}`;
+                titleLabel.textContent = item.title;
+
+                textDiv.appendChild(phaseLabel);
+                textDiv.appendChild(titleLabel);
+
+                btn.appendChild(iconDiv);
+                btn.appendChild(textDiv);
+                
+                container.appendChild(btn);
+            });
+        }
+
+        function updateDetailsPanel() {
+            const data = roadmapData.find(d => d.id === activePhaseId);
+            if (!data) return;
+
+            document.getElementById('detail-phase-badge').textContent = data.phase;
+            document.getElementById('detail-days').innerHTML = `<span class="mr-1">⏱️</span> ${data.days}`;
+            document.getElementById('detail-title').textContent = data.title;
+            document.getElementById('detail-goal').textContent = data.goal;
+
+            const tasksContainer = document.getElementById('detail-tasks');
+            tasksContainer.innerHTML = '';
+
+            data.tasks.forEach((task, index) => {
+                const label = document.createElement('label');
+                label.className = 'flex items-start space-x-3 p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-colors cursor-pointer group';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'mt-1 w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer';
+                
+                const textSpan = document.createElement('span');
+                textSpan.className = 'text-sm text-gray-700 font-medium group-hover:text-gray-900 transition-colors';
+                textSpan.textContent = task;
+
+                label.appendChild(checkbox);
+                label.appendChild(textSpan);
+                tasksContainer.appendChild(label);
+            });
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('allocationChart').getContext('2d');
+            
+            const labels = roadmapData.slice(0, 6).map(d => d.phase);
+            const dataValues = roadmapData.slice(0, 6).map(d => d.duration);
+            const total = dataValues.reduce((a, b) => a + b, 0);
+
+            document.getElementById('total-days-metric').textContent = `~${total} Days`;
+
+            allocationChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: [
+                            '#e5e5ea',
+                            '#d2d2d7',
+                            '#aeaeb2',
+                            '#8e8e93',
+                            '#48484a',
+                            '#0071e3'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                font: {
+                                    family: "'Inter', sans-serif",
+                                    size: 11
+                                },
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(29, 29, 31, 0.9)',
+                            titleFont: {
+                                family: "'Inter', sans-serif",
+                                size: 13
+                            },
+                            bodyFont: {
+                                family: "'Inter', sans-serif",
+                                size: 12
+                            },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + ' Days';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTimeline();
+            updateDetailsPanel();
+            initChart();
+        });
+
+    </script>
+</body>
+</html>
