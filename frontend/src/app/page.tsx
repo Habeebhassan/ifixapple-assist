@@ -6,43 +6,9 @@ import ChatInterface from "@/components/chat/ChatInterface";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-apple-dark rounded-xl flex items-center justify-center text-white font-bold">
-                iF
-              </div>
-              <span className="font-semibold text-xl tracking-tight text-apple-dark">
-                iFixApple
-              </span>
-            </div>
-            <div className="hidden md:flex space-x-8">
-              <Link href="#features" className="text-sm font-medium text-gray-500 hover:text-apple-dark transition-colors">
-                Services
-              </Link>
-              
-              <Link href="/status" className="text-sm font-medium text-gray-500 hover:text-apple-dark transition-colors">
-                Check Status
-              </Link>
-              
-              <Link href="/trade-in" className="text-sm font-medium text-gray-500 hover:text-apple-dark transition-colors">
-                Trade-In
-              </Link>
-            </div>
-            <div>
-              <Link href="/book" className="bg-apple-dark text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-black transition-colors">
-                Book Repair
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <div className="flex flex-col">
       {/* Hero Section */}
-      <main className="flex-grow flex flex-col items-center justify-center px-4 text-center py-24 sm:py-32">
+      <main className="flex-grow flex flex-col items-center justify-center px-4 text-center py-20 sm:py-32 bg-white">
         <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-apple-dark max-w-4xl mb-6">
           Bring your Apple devices <br className="hidden sm:block" /> back to life.
         </h1>
@@ -66,7 +32,7 @@ export default function Home() {
       </main>
 
       {/* Features Grid */}
-      <section id="features" className="bg-white py-24 border-t border-gray-200">
+      <section id="features" className="bg-white py-24 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
             <div className="flex flex-col items-center">
@@ -95,7 +61,6 @@ export default function Home() {
       </section>
 
       {/* AI Chat Interface */}
-      <ChatInterface />
     </div>
   );
 }

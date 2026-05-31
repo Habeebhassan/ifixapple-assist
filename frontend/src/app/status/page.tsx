@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Smartphone, Shield, Lock, AlertCircle, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
+import { Search, Smartphone, Shield, Lock, AlertCircle, ArrowLeft, Loader2, CheckCircle2, Unlock, FileText, Signal } from "lucide-react";
 import Link from "next/link";
+import { apiService } from "@/services/api";
 
 type DeviceStatus = {
   imei: string;
@@ -12,6 +13,8 @@ type DeviceStatus = {
   find_my_iphone: string;
   blacklist_status: string;
   sim_lock: string;
+  carrier?: string;
+  contract_status?: string;
 };
 
 export default function StatusPage() {
@@ -32,14 +35,8 @@ export default function StatusPage() {
     setResult(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8001/api/imei/${imei}`);
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.detail || data.error || "Failed to fetch device status.");
-      }
-
-      setResult(data.data);
+      const data = await apiService.checkImei(imei);
+      setResult(data);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -157,7 +154,56 @@ export default function StatusPage() {
                   </p>
                 </div>
               </div>
+
+              {/* Carrier Info */}
+              {result.carrier && (
+                <div className="flex items-start space-x-3 p-4 rounded-2xl bg-gray-50">
+                  <div className="mt-1">
+                    <Signal className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-apple-dark">Network Carrier</p>
+                    <p className="text-gray-600">{result.carrier}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Contract Status */}
+              {result.contract_status && (
+                <div className={`flex items-start space-x-3 p-4 rounded-2xl ${result.contract_status === "Clean" ? "bg-gray-50" : "bg-yellow-50 border border-yellow-100"}`}>
+                  <div className="mt-1">
+                    <FileText className={`w-5 h-5 ${result.contract_status === "Clean" ? "text-gray-400" : "text-yellow-600"}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-apple-dark">Contract Status</p>
+                    <p className={`${result.contract_status === "Clean" ? "text-gray-600" : "text-yellow-700 font-medium"}`}>
+                      {result.contract_status}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Network Unlock Action Card */}
+            {result.sim_lock === "Locked" && (
+              <div className="mt-8 bg-apple-dark text-white rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between shadow-lg">
+                <div className="flex items-center space-x-4 mb-4 sm:mb-0">
+                  <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
+                    <Unlock className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg">Network Unlock Available</h3>
+                    <p className="text-gray-400 text-sm">Factory unlock your device for any carrier worldwide.</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => alert("Redirecting to Unlock Checkout... (Integration pending)")}
+                  className="w-full sm:w-auto bg-apple-blue text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-600 transition-colors"
+                >
+                  Unlock Device
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

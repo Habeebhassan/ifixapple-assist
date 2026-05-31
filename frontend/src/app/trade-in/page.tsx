@@ -21,7 +21,12 @@ export default function TradeInPage() {
   const [condition, setCondition] = useState("");
   const [estimatedValue, setEstimatedValue] = useState<number | null>(null);
 
+  // Dynamic Region & Currency State
+  const [locale, setLocale] = useState("en-US");
+  const [currencyCode, setCurrencyCode] = useState("USD");
+
   useEffect(() => {
+    // Authenticate User
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -32,7 +37,38 @@ export default function TradeInPage() {
       }
     };
     checkAuth();
+
+    // Detect user region/currency dynamically to prevent hydration mismatch
+    if (typeof window !== "undefined") {
+      const userLocale = navigator.language || "en-US";
+      setLocale(userLocale);
+
+      const region = userLocale.split('-')[1] || userLocale;
+      let detectedCurrency = "USD";
+
+      if (['GB'].includes(region)) detectedCurrency = "GBP";
+      else if (['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'GR', 'IE', 'PT', 'FI'].includes(region)) detectedCurrency = "EUR";
+      else if (['CA'].includes(region)) detectedCurrency = "CAD";
+      else if (['AU'].includes(region)) detectedCurrency = "AUD";
+      else if (['JP'].includes(region)) detectedCurrency = "JPY";
+      else if (['IN'].includes(region)) detectedCurrency = "INR";
+
+      setCurrencyCode(detectedCurrency);
+    }
   }, [router]);
+
+  // Formats the pure number into localized currency
+  const formatCurrency = (value: number) => {
+    try {
+      return new Intl.NumberFormat(locale, { 
+        style: 'currency', 
+        currency: currencyCode, 
+        maximumFractionDigits: 0 
+      }).format(value);
+    } catch (e) {
+      return `$${value}`; // Fallback
+    }
+  };
 
   // Simple mock pricing logic based on selections
   useEffect(() => {
@@ -45,8 +81,9 @@ export default function TradeInPage() {
       else if (deviceModel.includes("iPad")) basePrice = 250;
       else basePrice = 100;
 
-      if (condition === "Flawless") basePrice *= 1.2;
-      if (condition === "Cracked/Damaged") basePrice *= 0.5;
+      // Adjusted to match the new letter grades (A, B, C)
+      if (condition === "A") basePrice *= 1.2; // Flawless
+      if (condition === "C") basePrice *= 0.5; // Cracked/Damaged
 
       setEstimatedValue(Math.round(basePrice));
     }
@@ -60,15 +97,29 @@ export default function TradeInPage() {
     setError(null);
 
     try {
-      await apiService.createTradeInOffer({
-        user_id: userId,
-        device_details: { model: deviceModel, storage: storage },
-        grade: condition,
-        offered_price: estimatedValue,
-      });
+      // Bypassing the Python backend to insert directly into Supabase.
+      // The `condition` variable is now a letter grade (e.g., "A", "B", "C") which fits the varchar(2) limit.
+      const { error: dbError } = await supabase
+        .from("trade_in_offers")
+        .insert([
+          {
+            user_id: userId,
+            device_details: { model: deviceModel, storage: storage },
+            grade: condition,
+            offered_price: estimatedValue,
+            status: "Pending Review"
+          }
+        ]);
+
+      if (dbError) throw dbError;
+      
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message || "Failed to submit trade-in. Please try again.");
+      console.error(err);
+      // We will now see the EXACT database error if it fails
+      setError(
+        "Database Error: " + (err.message || "Unknown error")
+      );
     } finally {
       setSubmitting(false);
     }
@@ -97,7 +148,7 @@ export default function TradeInPage() {
             </div>
             <h2 className="text-3xl font-bold text-apple-dark mb-4">Offer Submitted!</h2>
             <p className="text-gray-500 mb-8">
-              We've locked in your estimated trade-in value of <strong>${estimatedValue}</strong>. You will receive an email shortly with shipping instructions.
+              We've locked in your estimated trade-in value of <strong>{formatCurrency(estimatedValue || 0)}</strong>. You will receive an email shortly with shipping instructions.
             </p>
             <Link 
               href="/dashboard"
@@ -122,9 +173,9 @@ export default function TradeInPage() {
 
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
               {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center mb-6 border border-red-100">
-                  <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
-                  {error}
+                <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-start mb-6 border border-red-100">
+                  <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">{error}</span>
                 </div>
               )}
 
@@ -171,16 +222,16 @@ export default function TradeInPage() {
                     className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-xl px-4 py-3 text-apple-dark outline-none transition-all appearance-none"
                   >
                     <option value="" disabled>Select condition...</option>
-                    <option value="Flawless">Flawless (Looks brand new)</option>
-                    <option value="Good">Good (Normal wear and tear)</option>
-                    <option value="Cracked/Damaged">Cracked or Damaged</option>
+                    <option value="A">Flawless (Looks brand new)</option>
+                    <option value="B">Good (Normal wear and tear)</option>
+                    <option value="C">Cracked or Damaged</option>
                   </select>
                 </div>
 
                 {estimatedValue !== null && (
                   <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100 text-center mt-6 animate-in fade-in">
                     <p className="text-sm font-semibold text-purple-800 mb-1">Estimated Trade-In Value</p>
-                    <p className="text-4xl font-bold text-purple-900">${estimatedValue}</p>
+                    <p className="text-4xl font-bold text-purple-900">{formatCurrency(estimatedValue)}</p>
                   </div>
                 )}
 
