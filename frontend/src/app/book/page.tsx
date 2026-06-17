@@ -13,6 +13,11 @@ export default function BookRepairPage() {
   const [session, setSession] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   
+  // New state for Serial/IMEI Lookup
+  const [serialNumber, setSerialNumber] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verifySuccess, setVerifySuccess] = useState<string | null>(null);
+
   const [deviceModel, setDeviceModel] = useState("");
   const [issueType, setIssueType] = useState("");
   const [description, setDescription] = useState("");
@@ -106,6 +111,8 @@ export default function BookRepairPage() {
           <button 
             onClick={() => {
               setIsSuccess(false);
+              setSerialNumber("");
+              setVerifySuccess(null);
               setDeviceModel("");
               setIssueType("");
               setDescription("");
@@ -133,6 +140,49 @@ export default function BookRepairPage() {
             <span className="text-sm">{error}</span>
           </div>
         )}
+
+        {/* --- Serial Number Lookup Section --- */}
+        <div className="mb-8 p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
+          <label className="block text-sm font-semibold text-apple-dark mb-2">Have a Serial Number or IMEI?</label>
+          <p className="text-xs text-gray-500 mb-4">Enter it below to automatically find your exact device details.</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={serialNumber}
+              onChange={(e) => setSerialNumber(e.target.value)}
+              placeholder="e.g. C02X..."
+              className="flex-1 bg-white border border-gray-200 focus:border-apple-blue focus:ring-2 focus:ring-apple-blue/20 rounded-xl px-4 py-3 text-apple-dark outline-none transition-all uppercase"
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                if(!serialNumber) return;
+                setIsVerifying(true);
+                setError(null);
+                setVerifySuccess(null);
+                try {
+                  const data = await apiService.checkImei(serialNumber);
+                  setDeviceModel(data.model); // Auto-fill the manual input below!
+                  setVerifySuccess(`Device found: ${data.model}`);
+                } catch (err: any) {
+                  setError(err.message || "Could not find device details.");
+                } finally {
+                  setIsVerifying(false);
+                }
+              }}
+              disabled={isVerifying || !serialNumber}
+              className="bg-apple-blue text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-600 transition-colors disabled:opacity-70 flex items-center justify-center whitespace-nowrap shadow-sm"
+            >
+              {isVerifying ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Device"}
+            </button>
+          </div>
+          {verifySuccess && (
+            <p className="text-sm text-green-600 font-medium mt-3 flex items-center animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 mr-1"/> {verifySuccess}
+            </p>
+          )}
+        </div>
+        {/* ---------------------------------- */}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>

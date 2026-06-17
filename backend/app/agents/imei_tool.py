@@ -3,16 +3,19 @@ import random
 import os
 import requests
 
-def check_imei_details(imei: str) -> dict:
-    # Basic validation
-    if len(imei) != 15 or not imei.isdigit():
-        return {"success": False, "error": "Invalid IMEI format."}
+def check_imei_details(identifier: str) -> dict:
+    # Basic validation for both IMEI (15 digits) and Serial Numbers (10-12 alphanumeric)
+    identifier = identifier.strip().upper()
+    if len(identifier) < 10 or not identifier.isalnum():
+        return {"success": False, "error": "Invalid IMEI or Serial Number format."}
+
+    is_serial = not identifier.isdigit()
 
     # --- REAL API INTEGRATION (RapidAPI - imei-checker4) ---
     api_key = os.environ.get("RAPIDAPI_KEY")
     api_host = os.environ.get("RAPIDAPI_HOST", "imei-checker4.p.rapidapi.com") 
     
-    if api_key and not imei.startswith("999"):
+    if api_key and not identifier.startswith("999") and not identifier.startswith("TEST"):
         try:
             url = f"https://{api_host}/imei"
             
@@ -22,9 +25,9 @@ def check_imei_details(imei: str) -> dict:
                 "x-rapidapi-key": api_key
             }
             
-            # Using data=payload formats it as x-www-form-urlencoded 
-            # exactly like the curl command requires.
-            payload = {"imei": imei}
+            # Using data=payload formats it as x-www-form-urlencoded. 
+            # Some APIs take 'sn' for serials, others just use 'imei' for both.
+            payload = {"imei": identifier} if not is_serial else {"sn": identifier}
             
             response = requests.post(url, headers=headers, data=payload)
             
@@ -42,7 +45,8 @@ def check_imei_details(imei: str) -> dict:
             return {
                 "success": True,
                 "data": {
-                    "imei": imei,
+                    "identifier": identifier,
+                    "type": "Serial Number" if is_serial else "IMEI",
                     "model": data.get("model", data.get("device_name", "Unknown Device")),
                     "storage": data.get("storage", data.get("capacity", "Unknown")), 
                     "warranty_status": data.get("warranty", "Unknown"),
@@ -60,13 +64,14 @@ def check_imei_details(imei: str) -> dict:
     # --- MOCK DATA FALLBACK ---
     time.sleep(1.5)
     
-    if imei.startswith("999"):
+    if identifier.startswith("999") or identifier.startswith("TESTBAD"):
         return {
             "success": True,
             "data": {
-                "imei": imei,
-                "model": "iPhone 13 Pro Max",
-                "storage": "256GB",
+                "identifier": identifier,
+                "type": "Serial Number" if is_serial else "IMEI",
+                "model": "MacBook Pro 16-inch (2021) M1 Max" if is_serial else "iPhone 13 Pro Max",
+                "storage": "1TB" if is_serial else "256GB",
                 "warranty_status": "Out of Warranty",
                 "find_my_iphone": "ON",
                 "blacklist_status": "BLACKLISTED",
@@ -79,14 +84,15 @@ def check_imei_details(imei: str) -> dict:
     return {
         "success": True,
         "data": {
-            "imei": imei,
-            "model": "iPhone 14 (Mock Data)",
-            "storage": "128GB",
+            "identifier": identifier,
+            "type": "Serial Number" if is_serial else "IMEI",
+            "model": "MacBook Air 13-inch (2020) M1" if is_serial else "iPhone 14 (Mock Data)",
+            "storage": "256GB" if is_serial else "128GB",
             "warranty_status": "Active",
             "find_my_iphone": "OFF",
             "blacklist_status": "CLEAN",
-            "sim_lock": "Locked",
-            "carrier": "T-Mobile",
+            "sim_lock": "Unlocked" if is_serial else "Locked",
+            "carrier": "Wi-Fi Only" if is_serial else "T-Mobile",
             "contract_status": "Clean"
         }
     }
