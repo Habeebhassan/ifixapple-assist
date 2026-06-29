@@ -15,10 +15,18 @@ load_dotenv()
 
 app = FastAPI(title="iFixApple Assist API")
 
+origins = [
+    "https://ifixapple-assist.vercel.app/",
+    "http://localhost:3000",  # For local development
+]
+
+# 
+
+
 # Setup CORS to allow all origins for local development to prevent fetch failures
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
