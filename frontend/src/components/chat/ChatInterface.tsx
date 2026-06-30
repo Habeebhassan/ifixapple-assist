@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Bot, Loader2, Trash2, AlertCircle, Maximize2, Minimize2, Plus, MessageSquare } from "lucide-react";
+import { MessageCircle, X, Send, Sparkles, Loader2, Trash2, AlertCircle, Maximize2, Minimize2, Plus, MessageSquare } from "lucide-react";
 import { apiService } from "@/services/api";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
@@ -280,12 +280,12 @@ export default function ChatInterface() {
 
   return (
     <>
-      {/* Floating Action Button */}
+      {/* Floating Action Button with updated AI gradient and icon */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 p-4 bg-apple-blue text-white rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300 z-50 ${isOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
+        className={`fixed bottom-6 right-6 p-4 bg-gradient-to-tr from-blue-600 to-purple-500 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 z-50 ${isOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
       >
-        <MessageCircle className="w-6 h-6" />
+        <Sparkles className="w-6 h-6" />
       </button>
 
       {/* Dynamic Overlay & Window */}
@@ -349,8 +349,9 @@ export default function ChatInterface() {
           {/* Header */}
           <div className="bg-white/95 backdrop-blur-md px-6 py-4 border-b border-gray-200 flex justify-between items-center shrink-0 z-10">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-apple-blue rounded-full flex items-center justify-center shadow-sm">
-                <Bot className="w-6 h-6 text-white" />
+              {/* Updated Premium Avatar */}
+              <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 via-apple-blue to-purple-500 rounded-full flex items-center justify-center shadow-sm">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="font-bold text-apple-dark text-sm sm:text-base">
