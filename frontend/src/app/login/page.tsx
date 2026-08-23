@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, Loader2, Lock, Mail, ArrowRight } from "lucide-react";
@@ -8,7 +8,7 @@ import Link from "next/link";
 
 type AuthMode = "login" | "signup" | "reset";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   // State handles switching between Login, Signup, and Password Reset modes
@@ -210,6 +210,13 @@ export default function LoginPage() {
   );
 }
 
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-apple-gray"><Loader2 className="w-8 h-8 animate-spin text-apple-dark" /></div>}>
+      <LoginContent />
+    </Suspense>
+  );
+}
 
 // "use client";
 
