@@ -176,7 +176,7 @@ app = FastAPI(title="iFixApple Assist API")
 origins = [
     "http://localhost:3000",
     "https://ifixapple-assist.vercel.app", 
-    "https://dev.ifxaple.com.ng"
+    "https://dev.ifxapple.com.ng"
 ]
 
 # Setup CORS to allow all origins for local development to prevent fetch failures
