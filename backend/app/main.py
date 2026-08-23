@@ -176,14 +176,14 @@ app = FastAPI(title="iFixApple Assist API")
 origins = [
     "http://localhost:3000",
     "https://ifixapple-assist.vercel.app", 
-    "https://app.ifxaple.com.ng"
+    "https://dev.ifxaple.com.ng"
 ]
 
 # Setup CORS to allow all origins for local development to prevent fetch failures
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development; restrict in production
-    allow_credentials=False,
+    allow_origins=origins,  # Allow all origins for development; restrict in production
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -217,6 +217,31 @@ class TradeInOfferRequest(BaseModel):
     device_details: Dict[str, Any]
     grade: str
     offered_price: float
+
+# --- IMPLEMENTATION 2: FREE LOCAL IMEI SYNTAX VALIDATION (LUHN ALGORITHM) ---
+def is_valid_imei_format(imei: str) -> bool:
+    """
+    Validates if the IMEI string has the correct format and satisfies the Luhn algorithm.
+    This saves paid API credits by blocking invalid typing errors locally.
+    """
+    # IMEI must be exactly 15 digits
+    if not imei.isdigit() or len(imei) != 15:
+        return False
+        
+    digits = [int(d) for d in imei]
+    checksum = 0
+    
+    for i, digit in enumerate(digits):
+        # Double every second digit from the left
+        if i % 2 == 1:
+            doubled = digit * 2
+            # If doubling results in a 2-digit number, sum its digits (e.g., 14 -> 1+4 = 5)
+            checksum += doubled if doubled < 10 else (doubled - 9)
+        else:
+            checksum += digit
+            
+    # If the total sum is divisible by 10, the IMEI structure is valid
+    return checksum % 10 == 0
 
 @app.get("/")
 def read_root():
@@ -265,13 +290,38 @@ def chat_with_agent(request: ChatRequest):
         print(f"Dify API Network Error: {e}")
         raise HTTPException(status_code=502, detail="Failed to communicate with AI agent.")
 
-# --- THE IMEI ROUTE ---
+# # --- THE IMEI ROUTE ---
+# @app.get("/api/imei/{imei}")
+# def check_imei(imei: str):
+#     """
+#     Endpoint to check device status using an IMEI number.
+#     """
+#     result = check_imei_details(imei)
+    
+#     if not result["success"]:
+#         raise HTTPException(status_code=400, detail=result["error"])
+        
+#     return result
+
+# --- THE IMEI ROUTE (WITH INTEGRATED LOCAL PRE-CHECK) ---
 @app.get("/api/imei/{imei}")
 def check_imei(imei: str):
     """
     Endpoint to check device status using an IMEI number.
+    Applies a free local format check before reaching out to the external API tool.
     """
-    result = check_imei_details(imei)
+    # Clean up any potential spaces or hyphens the user typed
+    clean_imei = imei.replace(" ", "").replace("-", "")
+
+    # Run the free local validation check first
+    if not is_valid_imei_format(clean_imei):
+        raise HTTPException(
+            status_code=400, 
+            detail="Invalid IMEI format. It must be exactly 15 digits and pass checksum verification."
+        )
+
+    # If format is valid, forward the request to your imei_tool script
+    result = check_imei_details(clean_imei)
     
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["error"])
