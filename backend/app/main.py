@@ -182,8 +182,8 @@ origins = [
 # Setup CORS to allow all origins for local development to prevent fetch failures
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Allow all origins for development; restrict in production
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins for development; restrict in production
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
