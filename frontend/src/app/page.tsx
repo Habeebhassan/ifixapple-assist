@@ -303,7 +303,7 @@ return (
           Trusted by Nigerians
         </h2>
         <a 
-          href="https://g.page/r/YOUR_GOOGLE_REVIEW_LINK" 
+          href="https://g.page/r/CYlB77OoOeu-EBM/review"
           target="_blank" 
           rel="noopener noreferrer"
           className="inline-flex items-center bg-white border border-gray-200 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md hover:border-yellow-300 transition-all group"
