@@ -2,7 +2,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ChatInterface from "@/components/chat/ChatInterface";
+import ChatMount from "@/components/chat/ChatMount";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import type { Metadata } from "next";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -21,8 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} bg-zinc-50 text-zinc-950 antialiased h-full flex flex-col`}>
-        
-        {/* Global Navigation */}
+
         <Navbar />
         
         {/* Main Content Area Container */}
@@ -32,11 +32,14 @@ export default function RootLayout({
           </div>
         </main>
 
-        {/* Global Footer */}
+        <ChatMount />
+
+        <WhatsAppButton />
+
         <Footer />
 
-        <ChatInterface />
-        
+         {/* <Footer /> */}
+
       </body>
     </html>
   );

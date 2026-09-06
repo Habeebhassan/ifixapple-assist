@@ -1,5 +1,3 @@
-// This file centralizes all calls to your Python backend.
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8001";
 
 export const apiService = {
@@ -31,6 +29,20 @@ export const apiService = {
     }
     
     return data.data; // Return just the actual device data object
+  },
+
+  /**
+   * Fetch the latest public Google reviews.
+   */
+  async getReviews() {
+    const response = await fetch(`${API_BASE_URL}/api/reviews`);
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.detail || data.error || "Failed to fetch reviews");
+    }
+
+    return data;
   },
 
   /**

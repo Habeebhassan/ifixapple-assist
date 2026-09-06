@@ -290,6 +290,45 @@ def chat_with_agent(request: ChatRequest):
         print(f"Dify API Network Error: {e}")
         raise HTTPException(status_code=502, detail="Failed to communicate with AI agent.")
 
+
+# --- GOOGLE REVIEWS ROUTE ---
+@app.get("/api/reviews")
+def get_google_reviews():
+    """
+    Fetches live reviews from the Google Places API.
+    Sorts them to show 5-star reviews first.
+    """
+    if not GOOGLE_PLACES_API_KEY:
+         raise HTTPException(status_code=500, detail="Google API Key not configured.")
+    
+    # Using the Places Details API for reliable review fetching
+    url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={GOOGLE_PLACE_ID}&fields=reviews,rating,user_ratings_total&key={GOOGLE_PLACES_API_KEY}"
+    
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data.get("status") != "OK":
+            print("Google API Error:", data.get("error_message"))
+            raise HTTPException(status_code=400, detail="Failed to fetch reviews from Google.")
+            
+        result = data.get("result", {})
+        
+        # Grab reviews, sort by highest rating, and take the top 3
+        reviews = result.get("reviews", [])
+        top_reviews = sorted(reviews, key=lambda x: x.get("rating", 0), reverse=True)[:3]
+        
+        return {
+            "success": True,
+            "rating": result.get("rating", 4.9),
+            "total_ratings": result.get("user_ratings_total", 0),
+            "reviews": top_reviews
+        }
+    except Exception as e:
+        print(f"Reviews Error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to communicate with Google API.")
+
 # # --- THE IMEI ROUTE ---
 # @app.get("/api/imei/{imei}")
 # def check_imei(imei: str):

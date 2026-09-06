@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck, MapPin, Phone, Mail, Clock, CreditCard, Lock } from "lucide-react";
+import { ShieldCheck, MapPin, Phone, Mail, Clock, CreditCard, Lock, Camera, Globe2, MessageCircle } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -118,6 +118,19 @@ export default function Footer() {
                 <span>Mon-Sat: 9am - 6pm</span>
               </li>
             </ul>
+          </div>
+
+          {/* Social Media Links */}
+          <div className="flex space-x-4 mt-8">
+            <a href="https://www.instagram.com/ifixappleng/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-pink-500 hover:text-white transition-all shadow-sm">
+              <Camera className="w-5 h-5" />
+            </a>
+            <a href="https://x.com/ifixappleng/status/2004216685054538069" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-black hover:text-white transition-all shadow-sm">
+              <Globe2 className="w-5 h-5" />
+            </a>
+            <a href="https://wa.me/2349077871875" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-[#25D366] hover:text-white transition-all shadow-sm">
+              <MessageCircle className="w-5 h-5" />
+            </a>
           </div>
 
         </div>
