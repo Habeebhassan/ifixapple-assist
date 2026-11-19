@@ -15,18 +15,18 @@
 
 # app = FastAPI(title="iFixApple Assist API")
 
+# # IMPORTANT: CORS origins must NOT have a trailing slash at the end!
 # origins = [
-#     "https://ifixapple-assist.vercel.app/",
-#     "http://localhost:3000",  # For local development
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+#     "https://ifixapple-assist.vercel.app", 
+#     "https://dev.ifxapple.com.ng"
 # ]
-
-# # 
-
 
 # # Setup CORS to allow all origins for local development to prevent fetch failures
 # app.add_middleware(
 #     CORSMiddleware,
-#     allow_origins=origins,
+#     allow_origins=origins,  # Allow all origins for development; restrict in production
 #     allow_credentials=True,
 #     allow_methods=["*"],
 #     allow_headers=["*"],
@@ -40,9 +40,12 @@
 # else:
 #     supabase = None
 
-# # Dify Config
+# # API Keys
 # DIFY_API_KEY = os.environ.get("DIFY_API_KEY")
 # DIFY_API_URL = os.environ.get("DIFY_API_URL", "https://api.dify.ai/v1")
+
+# GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY")
+# GOOGLE_PLACE_ID = os.environ.get("GOOGLE_PLACE_ID", "ChIJVcJ5S8WKOxARiUHvs6g5674")
 
 # # --- PYDANTIC MODELS ---
 # class ChatRequest(BaseModel):
@@ -61,6 +64,14 @@
 #     device_details: Dict[str, Any]
 #     grade: str
 #     offered_price: float
+
+# # --- IMPLEMENTATION 2: RELAXED IMEI VALIDATION FOR DEV TESTING ---
+# def is_valid_imei_format(imei: str) -> bool:
+#     # Relaxed algorithm for testing so fake numbers don't instantly fail.
+#     # In production, we will switch this back to the strict Luhn mod 10 check.
+#     if len(imei) < 10 or not imei.isalnum():
+#         return False
+#     return True
 
 # @app.get("/")
 # def read_root():
@@ -81,31 +92,86 @@
 #         "inputs": {},
 #         "query": request.query,
 #         "response_mode": "blocking",
-#         "conversation_id": request.conversation_id,
 #         "user": request.user_id
 #     }
+    
+#     if request.conversation_id and request.conversation_id.strip() != "":
+#         payload["conversation_id"] = request.conversation_id
 
 #     try:
 #         response = requests.post(f"{DIFY_API_URL}/chat-messages", headers=headers, json=payload)
-#         response.raise_for_status()
+        
+#         if not response.ok:
+#             error_details = response.text
+#             print(f"Dify API Rejected Request: {error_details}")
+#             response.raise_for_status()
+            
 #         data = response.json()
         
 #         return {
-#             "answer": data.get("answer"),
-#             "conversation_id": data.get("conversation_id"),
+#             "answer": data.get("answer", "No answer provided by agent."),
+#             "conversation_id": data.get("conversation_id", ""),
 #             "user_id": request.user_id
 #         }
 #     except requests.exceptions.RequestException as e:
-#         print(f"Dify API Error: {e}")
+#         print(f"Dify API Network Error: {e}")
 #         raise HTTPException(status_code=502, detail="Failed to communicate with AI agent.")
+
+# # --- GOOGLE REVIEWS ROUTE ---
+# @app.get("/api/reviews")
+# def get_google_reviews():
+#     """
+#     Fetches live reviews from the Google Places API.
+#     Sorts them to show 5-star reviews first.
+#     """
+#     if not GOOGLE_PLACES_API_KEY:
+#          raise HTTPException(status_code=500, detail="Google API Key not configured.")
+    
+#     url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={GOOGLE_PLACE_ID}&fields=reviews,rating,user_ratings_total&key={GOOGLE_PLACES_API_KEY}"
+    
+#     try:
+#         response = requests.get(url, timeout=10)
+#         response.raise_for_status()
+#         data = response.json()
+        
+#         if data.get("status") != "OK":
+#             error_msg = data.get("error_message", "Unknown Google API Error")
+#             print(f"Google API Error: {data.get('status')} - {error_msg}")
+#             raise HTTPException(status_code=400, detail=f"Google API rejected request: {error_msg}")
+            
+#         result = data.get("result", {})
+        
+#         # Grab reviews, sort by highest rating, and take the top 3
+#         reviews = result.get("reviews", [])
+#         top_reviews = sorted(reviews, key=lambda x: x.get("rating", 0), reverse=True)[:3]
+        
+#         return {
+#             "success": True,
+#             "rating": result.get("rating", 4.9),
+#             "total_ratings": result.get("user_ratings_total", 0),
+#             "reviews": top_reviews
+#         }
+#     except requests.exceptions.RequestException as e:
+#         print(f"Network error fetching reviews: {e}")
+#         raise HTTPException(status_code=502, detail="Network error communicating with Google API.")
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         print(f"Unexpected Reviews Error: {e}")
+#         raise HTTPException(status_code=500, detail=f"Failed to communicate with Google API: {str(e)}")
 
 # # --- THE IMEI ROUTE ---
 # @app.get("/api/imei/{imei}")
 # def check_imei(imei: str):
-#     """
-#     Endpoint to check device status using an IMEI number.
-#     """
-#     result = check_imei_details(imei)
+#     clean_imei = imei.replace(" ", "").replace("-", "")
+
+#     if not is_valid_imei_format(clean_imei):
+#         raise HTTPException(
+#             status_code=400, 
+#             detail="Invalid IMEI format. It must be at least 10 alphanumeric characters."
+#         )
+
+#     result = check_imei_details(clean_imei)
     
 #     if not result["success"]:
 #         raise HTTPException(status_code=400, detail=result["error"])
@@ -115,9 +181,6 @@
 # # --- BOOKING & TRADE-IN ROUTES ---
 # @app.post("/api/tickets")
 # def create_repair_ticket(ticket: RepairTicketRequest):
-#     """
-#     Endpoint to save a new repair ticket to Supabase.
-#     """
 #     if not supabase:
 #         raise HTTPException(status_code=500, detail="Database connection not configured.")
     
@@ -136,9 +199,6 @@
 
 # @app.post("/api/trade-in")
 # def create_trade_in_offer(offer: TradeInOfferRequest):
-#     """
-#     Endpoint to save a new trade-in offer to Supabase.
-#     """
 #     if not supabase:
 #         raise HTTPException(status_code=500, detail="Database connection not configured.")
     
@@ -155,7 +215,7 @@
 #         print(f"Supabase Error: {e}")
 #         raise HTTPException(status_code=400, detail="Failed to create trade-in offer.")
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -175,6 +235,7 @@ app = FastAPI(title="iFixApple Assist API")
 # IMPORTANT: CORS origins must NOT have a trailing slash at the end!
 origins = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "https://ifixapple-assist.vercel.app", 
     "https://dev.ifxapple.com.ng"
 ]
@@ -182,8 +243,8 @@ origins = [
 # Setup CORS to allow all origins for local development to prevent fetch failures
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development; restrict in production
-    allow_credentials=False,
+    allow_origins=origins,  # Allow all origins for development; restrict in production
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -196,9 +257,12 @@ if supabase_url and supabase_key:
 else:
     supabase = None
 
-# Dify Config
+# API Keys
 DIFY_API_KEY = os.environ.get("DIFY_API_KEY")
 DIFY_API_URL = os.environ.get("DIFY_API_URL", "https://api.dify.ai/v1")
+
+GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY")
+GOOGLE_PLACE_ID = os.environ.get("GOOGLE_PLACE_ID", "ChIJVcJ5S8WKOxARiUHvs6g5674")
 
 # --- PYDANTIC MODELS ---
 class ChatRequest(BaseModel):
@@ -218,30 +282,18 @@ class TradeInOfferRequest(BaseModel):
     grade: str
     offered_price: float
 
-# --- IMPLEMENTATION 2: FREE LOCAL IMEI SYNTAX VALIDATION (LUHN ALGORITHM) ---
+class TicketStatusUpdate(BaseModel):
+    status: str
+    user_email: str
+    device_model: str
+
+# --- IMPLEMENTATION 2: RELAXED IMEI VALIDATION FOR DEV TESTING ---
 def is_valid_imei_format(imei: str) -> bool:
-    """
-    Validates if the IMEI string has the correct format and satisfies the Luhn algorithm.
-    This saves paid API credits by blocking invalid typing errors locally.
-    """
-    # IMEI must be exactly 15 digits
-    if not imei.isdigit() or len(imei) != 15:
+    # Relaxed algorithm for testing so fake numbers don't instantly fail.
+    # In production, we will switch this back to the strict Luhn mod 10 check.
+    if len(imei) < 10 or not imei.isalnum():
         return False
-        
-    digits = [int(d) for d in imei]
-    checksum = 0
-    
-    for i, digit in enumerate(digits):
-        # Double every second digit from the left
-        if i % 2 == 1:
-            doubled = digit * 2
-            # If doubling results in a 2-digit number, sum its digits (e.g., 14 -> 1+4 = 5)
-            checksum += doubled if doubled < 10 else (doubled - 9)
-        else:
-            checksum += digit
-            
-    # If the total sum is divisible by 10, the IMEI structure is valid
-    return checksum % 10 == 0
+    return True
 
 @app.get("/")
 def read_root():
@@ -258,7 +310,6 @@ def chat_with_agent(request: ChatRequest):
         "Content-Type": "application/json"
     }
 
-    # Start with the base payload (no conversation_id)
     payload = {
         "inputs": {},
         "query": request.query,
@@ -266,14 +317,12 @@ def chat_with_agent(request: ChatRequest):
         "user": request.user_id
     }
     
-    # Only attach the conversation_id if it is NOT an empty string
     if request.conversation_id and request.conversation_id.strip() != "":
         payload["conversation_id"] = request.conversation_id
 
     try:
         response = requests.post(f"{DIFY_API_URL}/chat-messages", headers=headers, json=payload)
         
-        # If Dify returns an error, let's capture the exact text for debugging
         if not response.ok:
             error_details = response.text
             print(f"Dify API Rejected Request: {error_details}")
@@ -290,7 +339,6 @@ def chat_with_agent(request: ChatRequest):
         print(f"Dify API Network Error: {e}")
         raise HTTPException(status_code=502, detail="Failed to communicate with AI agent.")
 
-
 # --- GOOGLE REVIEWS ROUTE ---
 @app.get("/api/reviews")
 def get_google_reviews():
@@ -301,7 +349,6 @@ def get_google_reviews():
     if not GOOGLE_PLACES_API_KEY:
          raise HTTPException(status_code=500, detail="Google API Key not configured.")
     
-    # Using the Places Details API for reliable review fetching
     url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={GOOGLE_PLACE_ID}&fields=reviews,rating,user_ratings_total&key={GOOGLE_PLACES_API_KEY}"
     
     try:
@@ -310,8 +357,9 @@ def get_google_reviews():
         data = response.json()
         
         if data.get("status") != "OK":
-            print("Google API Error:", data.get("error_message"))
-            raise HTTPException(status_code=400, detail="Failed to fetch reviews from Google.")
+            error_msg = data.get("error_message", "Unknown Google API Error")
+            print(f"Google API Error: {data.get('status')} - {error_msg}")
+            raise HTTPException(status_code=400, detail=f"Google API rejected request: {error_msg}")
             
         result = data.get("result", {})
         
@@ -325,41 +373,26 @@ def get_google_reviews():
             "total_ratings": result.get("user_ratings_total", 0),
             "reviews": top_reviews
         }
+    except requests.exceptions.RequestException as e:
+        print(f"Network error fetching reviews: {e}")
+        raise HTTPException(status_code=502, detail="Network error communicating with Google API.")
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Reviews Error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to communicate with Google API.")
+        print(f"Unexpected Reviews Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to communicate with Google API: {str(e)}")
 
-# # --- THE IMEI ROUTE ---
-# @app.get("/api/imei/{imei}")
-# def check_imei(imei: str):
-#     """
-#     Endpoint to check device status using an IMEI number.
-#     """
-#     result = check_imei_details(imei)
-    
-#     if not result["success"]:
-#         raise HTTPException(status_code=400, detail=result["error"])
-        
-#     return result
-
-# --- THE IMEI ROUTE (WITH INTEGRATED LOCAL PRE-CHECK) ---
+# --- THE IMEI ROUTE ---
 @app.get("/api/imei/{imei}")
 def check_imei(imei: str):
-    """
-    Endpoint to check device status using an IMEI number.
-    Applies a free local format check before reaching out to the external API tool.
-    """
-    # Clean up any potential spaces or hyphens the user typed
     clean_imei = imei.replace(" ", "").replace("-", "")
 
-    # Run the free local validation check first
     if not is_valid_imei_format(clean_imei):
         raise HTTPException(
             status_code=400, 
-            detail="Invalid IMEI format. It must be exactly 15 digits and pass checksum verification."
+            detail="Invalid IMEI format. It must be at least 10 alphanumeric characters."
         )
 
-    # If format is valid, forward the request to your imei_tool script
     result = check_imei_details(clean_imei)
     
     if not result["success"]:
@@ -370,9 +403,6 @@ def check_imei(imei: str):
 # --- BOOKING & TRADE-IN ROUTES ---
 @app.post("/api/tickets")
 def create_repair_ticket(ticket: RepairTicketRequest):
-    """
-    Endpoint to save a new repair ticket to Supabase.
-    """
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection not configured.")
     
@@ -389,11 +419,43 @@ def create_repair_ticket(ticket: RepairTicketRequest):
         print(f"Supabase Error: {e}")
         raise HTTPException(status_code=400, detail="Failed to create repair ticket.")
 
+@app.put("/api/tickets/{ticket_id}/status")
+def update_ticket_status(ticket_id: str, update: TicketStatusUpdate, background_tasks: BackgroundTasks):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Database connection not configured.")
+    
+    try:
+        # 1. Update ticket status in Supabase
+        data = supabase.table("repair_tickets").update({"status": update.status}).eq("id", ticket_id).execute()
+        
+        # 2. Dispatch email notification in the background so the UI updates instantly
+        background_tasks.add_task(send_status_email, update.user_email, update.device_model, update.status, ticket_id)
+        
+        return {"success": True, "data": data.data}
+    except Exception as e:
+        print(f"Supabase Error: {e}")
+        raise HTTPException(status_code=400, detail="Failed to update ticket status.")
+
+def send_status_email(email: str, device: str, status: str, ticket_id: str):
+    """
+    Placeholder for a real email integration (like Resend, SendGrid, or Postmark).
+    This simulates an email being sent by printing the rich text to the server terminal.
+    """
+    print("\n" + "="*50)
+    print(f"📧 [EMAIL DISPATCHED] To: {email}")
+    if status == "In Progress":
+        print(f"Subject: Repair Initiated - {device}")
+        print(f"Body: Great news! Our engineers have started working on your {device}.")
+        print("We will notify you the moment it is ready for pickup.")
+    elif status == "Completed":
+        print(f"Subject: Ready for Pickup! - {device}")
+        print(f"Body: Your {device} has been successfully repaired and is ready for pickup at our Ajah lab.")
+        print("\nToo busy to pick it up? Click here to request VIP Dispatch delivery:")
+        print(f"👉 https://app.ifixapple.com.ng/book?delivery=dispatch&ticket={ticket_id}")
+    print("="*50 + "\n")
+
 @app.post("/api/trade-in")
 def create_trade_in_offer(offer: TradeInOfferRequest):
-    """
-    Endpoint to save a new trade-in offer to Supabase.
-    """
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection not configured.")
     

@@ -1,416 +1,1123 @@
-"use client";
 
-import { useState, useEffect } from "react";
-import {
-ArrowRight, Wrench, ShieldCheck, Smartphone, PlayCircle,
-Star, Quote, ChevronDown, MessageCircle, Truck, Zap, MapPin, CheckCircle2
-} from "lucide-react";
-import Link from "next/link";
-import { apiService } from "@/services/api";
-
-export default function LandingPage() {
-const [reviews, setReviews] = useState<any[]>([
-{
-author_name: "Chinedu Okafor",
-rating: 5,
-text: "Incredible service! The AI gave me a quote in seconds, and they fixed my iPhone 13 Pro Max screen the same day. Highly recommended.",
-time_description: "2 weeks ago"
-},
-{
-author_name: "Sarah Williams",
-rating: 5,
-text: "I was skeptical about giving out my MacBook, but their dispatch rider was so professional. Got my laptop back working perfectly without leaving my office.",
-time_description: "1 month ago"
-},
-{
-author_name: "David Adeleke",
-rating: 5,
-text: "The no part-swapping guarantee gave me peace of mind. Genuine Apple parts and a very clean lab environment. Best in the city.",
-time_description: "3 months ago"
-}
-]);
-const [rating, setRating] = useState(5.0);
-const [totalRatings, setTotalRatings] = useState(124);
-
-// Fetch live reviews on mount (falls back to default if API fails)
-useEffect(() => {
-const fetchReviews = async () => {
-try {
-const data = await apiService.getReviews();
-if (data.reviews && data.reviews.length > 0) {
-setReviews(data.reviews);
-setRating(data.rating);
-setTotalRatings(data.total_ratings);
-}
-} catch (error) {
-console.log("Using fallback reviews.", error);
-}
-};
-fetchReviews();
-}, []);
-
-return (
-  <div className="flex flex-col">
-
-  {/* Hero Section */}
-  <section className="relative overflow-hidden pt-20 pb-24 sm:pt-32 sm:pb-32 lg:pb-40">
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-blue-100/50 to-transparent blur-3xl -z-10 rounded-full"></div>
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-apple-dark mb-8">
-        Premium Apple Repairs.<br />
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-apple-blue to-blue-400">Powered by AI.</span>
-      </h1>
-      <p className="max-w-2xl mx-auto text-xl text-gray-500 mb-10 leading-relaxed">
-        Get an instant diagnosis, lock in your repair quote, and track your device status in real-time. 
-        Experience the future of tech support.
-      </p>
-      <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-        <button 
-          onClick={() => typeof window !== 'undefined' && window.dispatchEvent(new Event('open-chat'))}
-          className="w-full sm:w-auto bg-apple-dark text-white px-8 py-4 rounded-full font-semibold hover:bg-black transition-all hover:scale-105 shadow-lg flex items-center justify-center group"
-        >
-          Ask the AI Genius
-          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-        </button>
-        <Link 
-          href="/book" 
-          className="w-full sm:w-auto bg-white text-apple-dark border border-gray-200 px-8 py-4 rounded-full font-semibold hover:bg-gray-50 transition-colors shadow-sm flex items-center justify-center"
-        >
-          Book Priority Repair
-        </Link>
-      </div>
-    </div>
-  </section>
-
-  {/* Proof of Quality Video Section */}
-  <section className="py-12 bg-white border-y border-gray-100">
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="relative rounded-[2rem] overflow-hidden shadow-2xl bg-black aspect-video group">
-        {/* The actual video file goes in public/videos/repair-placeholder.mp4 */}
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-700"
-        >
-          <source src="/videos/repair-placeholder.mp4" type="video/mp4" />
-        </video>
-        
-        {/* Gradient Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 sm:p-12">
-          <div className="flex items-center space-x-3 mb-3">
-            <ShieldCheck className="w-6 h-6 text-apple-blue" />
-            <span className="text-white font-bold tracking-wide uppercase text-sm">Certified Lab</span>
-          </div>
-          <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2">Precision Micro-Soldering</h3>
-          <p className="text-gray-300 max-w-lg">Watch our engineers bring logic boards back to life using state-of-the-art diagnostic equipment and genuine components.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  {/* Core Features Grid */}
-  <section id="features" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {/* Feature 1 */}
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-        <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
-          <Smartphone className="w-7 h-7 text-apple-blue" />
-        </div>
-        <h3 className="text-xl font-bold text-apple-dark mb-3">Instant Quotes</h3>
-        <p className="text-gray-500 leading-relaxed text-sm">
-          Our AI accurately diagnoses your issue and provides a transparent, upfront quote. No hidden fees or surprise charges.
-        </p>
-      </div>
-
-      {/* Feature 2 */}
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-        <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mb-6">
-          <ShieldCheck className="w-7 h-7 text-green-600" />
-        </div>
-        <h3 className="text-xl font-bold text-apple-dark mb-3">Guaranteed Quality</h3>
-        <p className="text-gray-500 leading-relaxed text-sm">
-          Every repair comes with a comprehensive 90-day warranty. We use premium OEM components to ensure longevity.
-        </p>
-      </div>
-
-      {/* Feature 3 */}
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-        <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center mb-6">
-          <Wrench className="w-7 h-7 text-purple-600" />
-        </div>
-        <h3 className="text-xl font-bold text-apple-dark mb-3">Expert Engineers</h3>
-        <p className="text-gray-500 leading-relaxed text-sm">
-          From shattered screens to complex liquid damage recovery, our certified lab handles the most difficult repairs.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  {/* VIP Dispatch Banner (Option 1) */}
-  <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-    <div className="bg-apple-dark rounded-[2.5rem] p-8 sm:p-16 relative overflow-hidden shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-12">
-      {/* Abstract Glowing Background */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-apple-blue/20 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-
-      <div className="relative z-10 lg:w-3/5">
-        <div className="inline-flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-full mb-6 border border-white/20">
-          <Truck className="w-4 h-4 text-apple-blue" />
-          <span className="text-xs font-bold text-white uppercase tracking-wider">Premium Logistics</span>
-        </div>
-        <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6 leading-tight tracking-tight">
-          Skip the traffic.<br/>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">We come to you.</span>
-        </h2>
-        <p className="text-gray-400 text-lg mb-8 max-w-xl leading-relaxed">
-          Don't let busy roads delay your repair. Choose one of our premium logistics options at checkout and get your device fixed without leaving your seat.
-        </p>
-
-        <div className="grid sm:grid-cols-2 gap-6 mb-8">
-          <Link href="/book?delivery=dispatch" className="flex items-start space-x-4 bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition-all hover:scale-105 cursor-pointer">
-            <div className="bg-blue-500/20 p-3 rounded-xl shrink-0">
-              <Truck className="w-6 h-6 text-blue-400" />
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-1">VIP Dispatch</h4>
-              <p className="text-sm text-gray-400">Secure pickup from your location and same-day return delivery.</p>
-            </div>
-          </Link>
-          <Link href="/book?delivery=home" className="flex items-start space-x-4 bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition-all hover:scale-105 cursor-pointer">
-            <div className="bg-purple-500/20 p-3 rounded-xl shrink-0">
-              <Zap className="w-6 h-6 text-purple-400" />
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-1">Home Visit</h4>
-              <p className="text-sm text-gray-400">A verified engineer arrives and repairs your device on the spot.</p>
-            </div>
-          </Link>
-        </div>
-
-        <Link href="/book" className="inline-flex items-center justify-center bg-white text-apple-dark px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-colors group shadow-lg">
-          Book Priority Repair
-          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-        </Link>
-      </div>
-
-      {/* Visual UI Graphic Area */}
-      <div className="relative z-10 lg:w-2/5 w-full flex justify-center lg:justify-end">
-         <div className="relative w-full max-w-sm aspect-square">
-           <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-full opacity-20 blur-3xl animate-pulse"></div>
-           <div className="absolute inset-4 bg-gray-900 rounded-3xl border border-white/10 shadow-2xl flex flex-col p-6 transform lg:rotate-3 hover:rotate-0 transition-transform duration-500">
-              <div className="flex items-center space-x-3 mb-6 pb-6 border-b border-white/10">
-                 <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center"><MapPin className="w-6 h-6 text-white"/></div>
-                 <div>
-                   <div className="h-4 w-24 bg-white/20 rounded mb-2"></div>
-                   <div className="h-3 w-32 bg-white/10 rounded"></div>
-                 </div>
-              </div>
-              <div className="space-y-4 flex-1">
-                 <div className="flex items-center justify-between bg-apple-blue/20 border border-apple-blue/50 p-4 rounded-xl">
-                    <span className="text-white text-sm font-medium flex items-center"><Truck className="w-4 h-4 mr-2"/> Dispatch Checkout</span>
-                    <div className="w-5 h-5 rounded-full bg-apple-blue flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-white"/></div>
-                 </div>
-                 <div className="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-xl">
-                    <span className="text-white text-sm font-medium flex items-center"><Zap className="w-4 h-4 mr-2 text-gray-400"/> Home Visit Options</span>
-                    <div className="w-5 h-5 rounded-full border border-white/30"></div>
-                 </div>
-              </div>
-           </div>
-         </div>
-      </div>
-    </div>
-  </section>
-
-  {/* FAQ Section */}
-  <section id="faq" className="bg-white py-24 border-t border-gray-100">
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl sm:text-4xl font-bold text-apple-dark mb-4">Frequently Asked Questions</h2>
-        <p className="text-lg text-gray-500">Everything you need to know about our repair process and policies.</p>
-      </div>
-
-      <div className="space-y-4">
-        {/* FAQ 1 */}
-        <details className="group border border-gray-200 rounded-2xl bg-gray-50 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center justify-between p-6 font-semibold text-apple-dark">
-            <span>Do you use original Apple parts?</span>
-            <ChevronDown className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="px-6 pb-6 text-gray-500 leading-relaxed text-sm">
-            We offer two tiers of parts to fit your budget: <strong className="text-apple-dark">Premium OEM</strong> (Original Equipment Manufacturer pulled from genuine devices) and <strong className="text-apple-dark">Standard Aftermarket</strong> (high-quality certified third-party components). We will never install an aftermarket part without your explicit consent.
-          </div>
-        </details>
-
-        {/* FAQ 2 */}
-        <details className="group border border-gray-200 rounded-2xl bg-gray-50 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center justify-between p-6 font-semibold text-apple-dark">
-            <span>How long does a repair usually take?</span>
-            <ChevronDown className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="px-6 pb-6 text-gray-500 leading-relaxed text-sm">
-            Standard repairs like screen swaps and battery replacements are typically completed in under <strong>45 minutes</strong> if you walk into our physical lab. Complex logic board micro-soldering or liquid damage recovery can take between 24 to 72 hours.
-          </div>
-        </details>
-
-        {/* FAQ 3 */}
-        <details className="group border border-gray-200 rounded-2xl bg-gray-50 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center justify-between p-6 font-semibold text-apple-dark">
-            <span>How does the VIP Dispatch Pick-up work?</span>
-            <ChevronDown className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="px-6 pb-6 text-gray-500 leading-relaxed text-sm">
-            Select the "VIP Dispatch" option when booking online. A verified rider will pick up your device securely from your home or office, deliver it to our lab, and return it to you the exact same day once fixed.
-          </div>
-        </details>
-
-        {/* FAQ 4 */}
-        <details className="group border border-gray-200 rounded-2xl bg-gray-50 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center justify-between p-6 font-semibold text-apple-dark">
-            <span>Do I need to make an appointment?</span>
-            <ChevronDown className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="px-6 pb-6 text-gray-500 leading-relaxed text-sm">
-            Walk-ins are always welcome! However, booking your repair online through our platform guarantees priority queue status, confirms part availability in advance, and locks in your repair quote.
-          </div>
-        </details>
-      </div>
-
-      <div className="mt-12 text-center bg-blue-50/50 p-8 rounded-3xl border border-blue-100 shadow-sm flex flex-col items-center">
-        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm border border-blue-100">
-          <MessageCircle className="w-6 h-6 text-apple-blue" />
-        </div>
-        <h3 className="text-xl font-bold text-apple-dark mb-2">Have a specific issue?</h3>
-        <p className="text-gray-500 mb-6 text-sm max-w-md mx-auto">
-          Our AI Genius is trained on thousands of Apple repair manuals. Describe your problem to get an instant diagnosis and quote.
-        </p>
-        <button 
-          onClick={() => typeof window !== 'undefined' && window.dispatchEvent(new Event('open-chat'))}
-          className="bg-apple-dark text-white px-6 py-3 rounded-full font-medium hover:bg-black transition-colors"
-        >
-          Ask the AI Genius
-        </button>
-      </div>
-    </div>
-  </section>
-
-  {/* Dynamic Customer Reviews Section */}
-  <section id="reviews" className="bg-apple-gray py-24 border-t border-gray-200">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div className="text-center mb-16">
-        <h2 className="text-3xl sm:text-4xl font-bold text-apple-dark mb-4">
-          Trusted by Nigerians
-        </h2>
-        <a 
-          href="https://g.page/r/CYlB77OoOeu-EBM/review"
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="inline-flex items-center bg-white border border-gray-200 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md hover:border-yellow-300 transition-all group"
-        >
-          <div className="flex space-x-1 mr-3">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400 group-hover:scale-110 transition-transform" style={{ transitionDelay: `${i * 50}ms` }} />
-            ))}
-          </div>
-          <span className="text-apple-dark font-semibold">
-            {rating.toFixed(1)} Rating • {totalRatings} Google Reviews
-          </span>
-        </a>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {reviews.map((review, index) => (
-          <div key={index} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative h-full flex flex-col">
-            <Quote className="w-10 h-10 text-blue-50 absolute top-6 right-6" />
-            <div className="flex items-center space-x-1 mb-4">
-              {[...Array(review.rating)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-gray-600 leading-relaxed text-sm mb-6 flex-grow relative z-10">
-              "{review.text}"
-            </p>
-            <div className="border-t border-gray-50 pt-4 mt-auto">
-              <p className="font-bold text-apple-dark text-sm">{review.author_name}</p>
-              <p className="text-xs text-gray-400">{review.time_description}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-    </div>
-  </section>
-
-</div>
-
-
-);
-}
 
 // "use client";
 
-// import { ArrowRight, Wrench, ShieldCheck, Smartphone } from "lucide-react";
+// import { useState } from "react";
 // import Link from "next/link";
-// import ChatInterface from "@/components/chat/ChatInterface";
+// import {
+//   Search,
+//   ShieldCheck,
+//   Wrench,
+//   RefreshCw,
+//   ChevronDown,
+//   MapPin,
+//   Truck,
+//   Zap,
+//   Package,
+//   CheckCircle2,
+//   Lock,
+//   ArrowRight,
+//   Smartphone,
+//   Shield,
+//   AlertCircle,
+// } from "lucide-react";
+// import { apiService } from "@/services/api";
 
-// export default function Home() {
+// interface ImeiTeaserResult {
+//   model?: string;
+//   identifier?: string;
+//   imei?: string;
+// }
+
+// export default function LandingPage() {
+//   // IMEI Search State
+//   const [imeiQuery, setImeiQuery] = useState("");
+//   const [isSearching, setIsSearching] = useState(false);
+//   const [searchResult, setSearchResult] = useState<ImeiTeaserResult | null>(null);
+//   const [searchError, setSearchError] = useState<string | null>(null);
+
+//   // FAQ State
+//   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+//   const handleImeiSearch = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     const cleanedImei = imeiQuery.trim();
+//     if (cleanedImei.length !== 15) {
+//       setSearchError("Please enter a valid 15-digit IMEI number.");
+//       return;
+//     }
+
+//     setIsSearching(true);
+//     setSearchError(null);
+//     setSearchResult(null);
+
+//     try {
+//       const data = await apiService.checkImei(cleanedImei);
+//       setSearchResult(data);
+//     } catch (err: unknown) {
+//       const message =
+//         err instanceof Error ? err.message : "Failed to identify device.";
+//       setSearchError(message);
+//     } finally {
+//       setIsSearching(false);
+//     }
+//   };
+
+//   const faqs = [
+//     {
+//       question: "Do you use original Apple parts?",
+//       answer:
+//         "We offer two options: Premium OEM parts (original specifications) and Standard Aftermarket parts. We will always clearly explain the difference and let you choose what fits your budget.",
+//     },
+//     {
+//       question: "Will I lose my data during a repair?",
+//       answer:
+//         "For standard repairs like screens and batteries, your data is 100% safe. However, for logic board micro-soldering or severe water damage, data loss is possible. We always recommend backing up your device before sending it to our physical lab.",
+//     },
+//     {
+//       question: "How does the swap (trade-in) work?",
+//       answer:
+//         "Use our online swap calculator to get an estimated value for your current device. Once approved, that value is deducted from the price of the UK Used device you want to upgrade to!",
+//     },
+//     {
+//       question: "How long does a typical repair take?",
+//       answer:
+//         "Most screen and battery replacements are completed within 1-2 hours of receiving the device. Logic board repairs and water damage recovery require 24-48 hours for thorough diagnostic testing.",
+//     },
+//   ];
+
+//   const resolvedIdentifier =
+//     searchResult?.identifier || searchResult?.imei || imeiQuery;
+
 //   return (
-//     <div className="flex flex-col">
-//       {/* Hero Section */}
-//       <main className="flex-grow flex flex-col items-center justify-center px-4 text-center py-20 sm:py-32 bg-white">
-//         <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-apple-dark max-w-4xl mb-6">
-//           Bring your Apple devices <br className="hidden sm:block" /> back to life.
-//         </h1>
-//         <p className="text-xl text-gray-500 max-w-2xl mb-10">
-//           Expert repairs, genuine parts, and instant AI diagnostics. Find out what's wrong with your device in seconds.
-//         </p>
-        
-//         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-//           <button 
-//             onClick={() => typeof window !== 'undefined' && window.dispatchEvent(new Event('open-chat'))}
-//             className="bg-apple-blue text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-blue-600 transition-colors flex items-center justify-center group"
-//           >
-//             Start AI Diagnosis
-//             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-//           </button>
-          
-//           <Link href="/status" className="bg-white border border-gray-300 text-apple-dark px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center">
-//             Check IMEI Status
-//           </Link>
-//         </div>
-//       </main>
+//     <div className="bg-white">
+//       {/* 1. HERO SECTION */}
+//       <section className="relative pt-24 pb-20 lg:pt-32 lg:pb-28 overflow-hidden">
+//         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-white to-white -z-10"></div>
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+//           <div className="inline-flex items-center px-4 py-2 rounded-full bg-apple-blue/10 text-apple-blue font-semibold text-sm mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+//             <SparklesIcon className="w-4 h-4 mr-2" />
+//             Lagos&apos;s Premier Apple Repair Lab
+//           </div>
 
-//       {/* Features Grid */}
-//       <section id="features" className="bg-white py-24 border-t border-gray-100">
+//           <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-apple-dark mb-6 leading-tight animate-in fade-in slide-in-from-bottom-6 duration-700">
+//             Expert care for your <br className="hidden md:block" />
+//             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+//               Apple devices.
+//             </span>
+//           </h1>
+
+//           <p className="text-lg md:text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+//             From precision micro-soldering to instant UK Used swaps. We revive,
+//             restore, and upgrade your tech with absolute transparency.
+//           </p>
+
+//           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-200">
+//             <Link
+//               href="/book"
+//               className="w-full sm:w-auto bg-apple-dark text-white px-8 py-4 rounded-full font-bold hover:bg-black transition-all hover:scale-105 shadow-lg"
+//             >
+//               Book a Repair
+//             </Link>
+//             <Link
+//               href="/trade-in"
+//               className="w-full sm:w-auto bg-white text-apple-dark border-2 border-gray-200 px-8 py-4 rounded-full font-bold hover:border-apple-dark hover:bg-gray-50 transition-all flex items-center justify-center"
+//             >
+//               Swap a Device <RefreshCw className="w-4 h-4 ml-2" />
+//             </Link>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* 2. IMEI SECURITY REPORT (THE TENTPOLE FEATURE) */}
+//       <section
+//         id="imei-audit"
+//         className="py-20 bg-apple-dark text-white relative overflow-hidden"
+//       >
+//         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+//         <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+
+//         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+//           <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+//             <Shield className="w-8 h-8 text-white" />
+//           </div>
+//           <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">
+//             IMEI Security Report
+//           </h2>
+//           <p className="text-gray-400 mb-10 text-lg max-w-2xl mx-auto">
+//             Buying a UK Used phone? Don&apos;t risk buying a stolen or locked
+//             device. Enter the 15-digit IMEI to instantly verify the model and
+//             unlock a premium security audit.
+//           </p>
+
+//           <form
+//             onSubmit={handleImeiSearch}
+//             className="relative max-w-2xl mx-auto mb-4"
+//           >
+//             <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 pointer-events-none" />
+//             <input
+//               type="text"
+//               inputMode="numeric"
+//               maxLength={15}
+//               aria-label="Enter 15-digit IMEI number"
+//               value={imeiQuery}
+//               onChange={(e) =>
+//                 setImeiQuery(e.target.value.replace(/\D/g, "").slice(0, 15))
+//               }
+//               placeholder="Enter 15-digit IMEI number..."
+//               className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-apple-blue focus:ring-2 focus:ring-apple-blue/50 rounded-full pl-16 pr-36 py-5 text-lg text-white placeholder-gray-500 outline-none transition-all shadow-inner"
+//             />
+//             <button
+//               type="submit"
+//               disabled={isSearching || imeiQuery.length !== 15}
+//               className="absolute right-2 top-1/2 -translate-y-1/2 bg-apple-blue text-white px-6 py-3 rounded-full font-bold hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:hover:bg-apple-blue flex items-center"
+//             >
+//               {isSearching ? (
+//                 <span className="animate-pulse">Verifying...</span>
+//               ) : (
+//                 "Verify Free"
+//               )}
+//             </button>
+//           </form>
+//           <p className="text-xs text-gray-500">
+//             {imeiQuery.length}/15 digits entered
+//           </p>
+
+//           {searchError && (
+//             <div className="mt-6 inline-flex items-center bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-3 rounded-full text-sm font-medium animate-in fade-in">
+//               <AlertCircle className="w-4 h-4 mr-2 shrink-0" />
+//               {searchError}
+//             </div>
+//           )}
+
+//           {/* Instant Gratification Teaser Result */}
+//           {searchResult && (
+//             <div className="mt-10 bg-white text-apple-dark rounded-3xl p-8 max-w-2xl mx-auto shadow-2xl animate-in zoom-in-95 duration-500">
+//               <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+//                 <CheckCircle2 className="w-6 h-6 text-green-500" />
+//               </div>
+//               <h3 className="text-2xl font-bold mb-1">
+//                 Device Detected Successfully
+//               </h3>
+//               <p className="text-gray-500 mb-6 font-medium">
+//                 {searchResult.model || "Apple Device"} &bull; {resolvedIdentifier}
+//               </p>
+
+//               <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100 mb-8 text-left max-w-md mx-auto">
+//                 <p className="font-bold text-blue-900 flex items-center mb-3">
+//                   <Lock className="w-4 h-4 mr-2" /> Locked Premium Data:
+//                 </p>
+//                 <ul className="space-y-2 text-sm text-gray-600">
+//                   <li className="flex items-center">
+//                     <ShieldCheck className="w-4 h-4 mr-2 text-gray-400 shrink-0" />{" "}
+//                     Global Blacklist &amp; Stolen Status
+//                   </li>
+//                   <li className="flex items-center">
+//                     <ShieldCheck className="w-4 h-4 mr-2 text-gray-400 shrink-0" />{" "}
+//                     iCloud Activation Lock (Find My)
+//                   </li>
+//                   <li className="flex items-center">
+//                     <ShieldCheck className="w-4 h-4 mr-2 text-gray-400 shrink-0" />{" "}
+//                     Network Carrier &amp; SIM Lock Data
+//                   </li>
+//                   <li className="flex items-center">
+//                     <ShieldCheck className="w-4 h-4 mr-2 text-gray-400 shrink-0" />{" "}
+//                     Outstanding Financial Contracts
+//                   </li>
+//                 </ul>
+//               </div>
+
+//               <Link
+//                 href={"/report?imei=" + encodeURIComponent(resolvedIdentifier)}
+//                 className="w-full sm:w-auto inline-flex items-center justify-center bg-apple-dark text-white px-8 py-4 rounded-full font-bold hover:bg-black transition-all hover:scale-105 shadow-lg group"
+//               >
+//                 Unlock Full Security Audit (₦2,000)
+//                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+//               </Link>
+//             </div>
+//           )}
+//         </div>
+//       </section>
+
+//       {/* 3. LOGISTICS & DELIVERY (NATIONWIDE SECTION) */}
+//       <section
+//         className="py-24 bg-gray-50 border-y border-gray-200/50"
+//         id="logistics"
+//       >
 //         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-//           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-//             <div className="flex flex-col items-center">
-//               <div className="w-16 h-16 bg-blue-50 text-apple-blue rounded-2xl flex items-center justify-center mb-6">
-//                 <Wrench className="w-8 h-8" />
+//           <div className="text-center mb-16">
+//             <h2 className="text-3xl md:text-4xl font-bold text-apple-dark mb-4 tracking-tight">
+//               We come to you, wherever you are.
+//             </h2>
+//             <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+//               From beating Lekki traffic to managing out-of-state logistics,
+//               we&apos;ve built a premium delivery network so you can get your
+//               device fixed without the stress.
+//             </p>
+//           </div>
+
+//           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+//             {/* Lagos Operations Card */}
+//             <div className="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-gray-200 relative overflow-hidden group">
+//               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+
+//               <div className="relative z-10">
+//                 <div className="w-14 h-14 bg-apple-blue/10 rounded-2xl flex items-center justify-center mb-8">
+//                   <MapPin className="w-7 h-7 text-apple-blue" />
+//                 </div>
+
+//                 <h3 className="text-2xl font-bold text-apple-dark mb-3">
+//                   Within Lagos
+//                 </h3>
+//                 <p className="text-gray-500 mb-8 leading-relaxed">
+//                   Experience our premium local services. Drop by our physical
+//                   lab, or let our engineers come directly to you.
+//                 </p>
+
+//                 <ul className="space-y-5 mb-10">
+//                   <li className="flex items-start">
+//                     <div className="bg-gray-100 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+//                       <CheckCircle2 className="w-4 h-4 text-gray-600" />
+//                     </div>
+//                     <div>
+//                       <h4 className="font-bold text-apple-dark text-sm">
+//                         Walk-in to Lab (Free)
+//                       </h4>
+//                       <p className="text-xs text-gray-500">
+//                         Visit our secure facility in the Ajah/Lekki axis.
+//                       </p>
+//                     </div>
+//                   </li>
+//                   <li className="flex items-start">
+//                     <div className="bg-blue-50 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+//                       <Truck className="w-4 h-4 text-apple-blue" />
+//                     </div>
+//                     <div>
+//                       <h4 className="font-bold text-apple-dark text-sm">
+//                         VIP Dispatch (+₦5,000)
+//                       </h4>
+//                       <p className="text-xs text-gray-500">
+//                         Secure pickup and return to your home or office.
+//                       </p>
+//                     </div>
+//                   </li>
+//                   <li className="flex items-start">
+//                     <div className="bg-yellow-50 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+//                       <Zap className="w-4 h-4 text-yellow-600" />
+//                     </div>
+//                     <div>
+//                       <h4 className="font-bold text-apple-dark text-sm">
+//                         Home/Office Visit (+₦20,000)
+//                       </h4>
+//                       <p className="text-xs text-gray-500">
+//                         An engineer fixes it right in front of you.
+//                       </p>
+//                     </div>
+//                   </li>
+//                 </ul>
+
+//                 <Link
+//                   href="/book"
+//                   className="inline-flex items-center text-apple-blue font-bold hover:underline"
+//                 >
+//                   Book a Lagos Repair <ArrowRight className="w-4 h-4 ml-1" />
+//                 </Link>
 //               </div>
-//               <h3 className="text-xl font-semibold mb-3">Certified Repairs</h3>
-//               <p className="text-gray-500">Screen, battery, and logic board repairs completed by trained specialists.</p>
 //             </div>
-//             <div className="flex flex-col items-center">
-//               <div className="w-16 h-16 bg-blue-50 text-apple-blue rounded-2xl flex items-center justify-center mb-6">
-//                 <Smartphone className="w-8 h-8" />
+
+//             {/* Nationwide Operations Card */}
+//             <div className="bg-apple-dark text-white rounded-3xl p-8 md:p-10 shadow-xl relative overflow-hidden group">
+//               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+
+//               <div className="relative z-10">
+//                 <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-8">
+//                   <Package className="w-7 h-7 text-white" />
+//                 </div>
+
+//                 <h3 className="text-2xl font-bold mb-3">
+//                   Outside Lagos (Nationwide)
+//                 </h3>
+//                 <p className="text-gray-400 mb-8 leading-relaxed">
+//                   Securely mail your device to us from anywhere in Nigeria. We
+//                   fix it on camera and ship it right back to you.
+//                 </p>
+
+//                 <ul className="space-y-5 mb-10">
+//                   <li className="flex items-start">
+//                     <div className="bg-white/10 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+//                       <Smartphone className="w-4 h-4 text-gray-300" />
+//                     </div>
+//                     <div>
+//                       <h4 className="font-bold text-white text-sm">
+//                         Book Online
+//                       </h4>
+//                       <p className="text-xs text-gray-400">
+//                         Generate a secure Ticket ID and terminal address.
+//                       </p>
+//                     </div>
+//                   </li>
+//                   <li className="flex items-start">
+//                     <div className="bg-white/10 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+//                       <Shield className="w-4 h-4 text-green-400" />
+//                     </div>
+//                     <div>
+//                       <h4 className="font-bold text-white text-sm">
+//                         Ship via Trusted Partners
+//                       </h4>
+//                       <p className="text-xs text-gray-400">
+//                         We partner with GIGL, DHL, GUO, and ABC Transport.
+//                       </p>
+//                     </div>
+//                   </li>
+//                   <li className="flex items-start">
+//                     <div className="bg-white/10 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+//                       <CheckCircle2 className="w-4 h-4 text-blue-400" />
+//                     </div>
+//                     <div>
+//                       <h4 className="font-bold text-white text-sm">
+//                         Repair &amp; Return
+//                       </h4>
+//                       <p className="text-xs text-gray-400">
+//                         We fix it, verify it, and waybill it back safely.
+//                       </p>
+//                     </div>
+//                   </li>
+//                 </ul>
+
+//                 <Link
+//                   href="/waybill"
+//                   className="inline-flex items-center bg-white text-apple-dark px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors"
+//                 >
+//                   View Waybill Guide
+//                 </Link>
 //               </div>
-//               <h3 className="text-xl font-semibold mb-3">AI Troubleshooting</h3>
-//               <p className="text-gray-500">Chat with our Genius AI to instantly diagnose your device symptoms before you book.</p>
-//             </div>
-//             <div className="flex flex-col items-center">
-//               <div className="w-16 h-16 bg-blue-50 text-apple-blue rounded-2xl flex items-center justify-center mb-6">
-//                 <ShieldCheck className="w-8 h-8" />
-//               </div>
-//               <h3 className="text-xl font-semibold mb-3">Guaranteed Quality</h3>
-//               <p className="text-gray-500">Every repair comes with a comprehensive 1-year warranty for your peace of mind.</p>
 //             </div>
 //           </div>
 //         </div>
 //       </section>
 
-//       {/* AI Chat Interface */}
+//       {/* 4. OUR SERVICES GRID */}
+//       <section className="py-24 bg-white" id="services">
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <div className="text-center mb-16">
+//             <h2 className="text-3xl md:text-4xl font-bold text-apple-dark mb-4">
+//               Precision Services
+//             </h2>
+//             <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+//               Equipped with logic board schematics and premium parts, we handle
+//               what other shops can&apos;t.
+//             </p>
+//           </div>
+
+//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+//             <div className="bg-gray-50 rounded-3xl p-8 hover:shadow-md transition-shadow border border-gray-100">
+//               <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+//                 <Smartphone className="w-6 h-6" />
+//               </div>
+//               <h3 className="text-xl font-bold text-apple-dark mb-3">
+//                 Screen &amp; Battery
+//               </h3>
+//               <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+//                 Restore your device to factory feel. We offer both Premium OEM
+//                 (True Tone retained) and standard aftermarket options.
+//               </p>
+//               <Link
+//                 href="/book"
+//                 className="text-sm font-bold text-apple-blue hover:underline"
+//               >
+//                 Book Replacement &rarr;
+//               </Link>
+//             </div>
+
+//             <div className="bg-gray-50 rounded-3xl p-8 hover:shadow-md transition-shadow border border-gray-100">
+//               <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-6">
+//                 <Wrench className="w-6 h-6" />
+//               </div>
+//               <h3 className="text-xl font-bold text-apple-dark mb-3">
+//                 Micro-Soldering
+//               </h3>
+//               <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+//                 Dead logic boards, water damage, and Face ID failures. We go
+//                 down to the component level to save your device.
+//               </p>
+//               <Link
+//                 href="/book"
+//                 className="text-sm font-bold text-purple-600 hover:underline"
+//               >
+//                 Book Diagnostics &rarr;
+//               </Link>
+//             </div>
+
+//             <div className="bg-gray-50 rounded-3xl p-8 hover:shadow-md transition-shadow border border-gray-100">
+//               <div className="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-6">
+//                 <RefreshCw className="w-6 h-6" />
+//               </div>
+//               <h3 className="text-xl font-bold text-apple-dark mb-3">
+//                 Swap &amp; Upgrade
+//               </h3>
+//               <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+//                 Don&apos;t want to fix it? Trade in your damaged or older device
+//                 for credit toward a pristine UK Used upgrade.
+//               </p>
+//               <Link
+//                 href="/trade-in"
+//                 className="text-sm font-bold text-green-600 hover:underline"
+//               >
+//                 Get an Offer &rarr;
+//               </Link>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* 5. FAQ SECTION */}
+//       <section className="py-24 bg-apple-gray" id="faq">
+//         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <div className="text-center mb-12">
+//             <h2 className="text-3xl md:text-4xl font-bold text-apple-dark mb-4 tracking-tight">
+//               Frequently Asked Questions
+//             </h2>
+//             <p className="text-gray-500">
+//               Everything you need to know about our repair and swap process.
+//             </p>
+//           </div>
+
+//           <div className="space-y-4">
+//             {faqs.map((faq, index) => (
+//               <div
+//                 key={index}
+//                 className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all duration-300"
+//               >
+//                 <button
+//                   type="button"
+//                   aria-expanded={openFaq === index}
+//                   onClick={() => setOpenFaq(openFaq === index ? null : index)}
+//                   className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
+//                 >
+//                   <span className="font-semibold text-apple-dark pr-4">
+//                     {faq.question}
+//                   </span>
+//                   <ChevronDown
+//                     className={
+//                       "w-5 h-5 text-gray-400 transition-transform duration-300 shrink-0 " +
+//                       (openFaq === index ? "rotate-180" : "")
+//                     }
+//                   />
+//                 </button>
+//                 <div
+//                   className={
+//                     "overflow-hidden transition-all duration-300 ease-in-out " +
+//                     (openFaq === index
+//                       ? "max-h-48 opacity-100"
+//                       : "max-h-0 opacity-0")
+//                   }
+//                 >
+//                   <p className="px-6 pb-6 text-sm text-gray-500 leading-relaxed">
+//                     {faq.answer}
+//                   </p>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+
+//           <div className="mt-12 text-center">
+//             <p className="text-gray-500 text-sm mb-4">Still have questions?</p>
+//             <button
+//               type="button"
+//               onClick={() => window.dispatchEvent(new Event("open-chat"))}
+//               className="bg-white border border-gray-200 text-apple-dark px-6 py-3 rounded-full font-semibold hover:border-apple-dark transition-colors shadow-sm"
+//             >
+//               Ask our AI Genius
+//             </button>
+//           </div>
+//         </div>
+//       </section>
 //     </div>
 //   );
 // }
+
+// function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
+//   return (
+//     <svg
+//       {...props}
+//       xmlns="http://www.w3.org/2000/svg"
+//       width="24"
+//       height="24"
+//       viewBox="0 0 24 24"
+//       fill="none"
+//       stroke="currentColor"
+//       strokeWidth="2"
+//       strokeLinecap="round"
+//       strokeLinejoin="round"
+//       aria-hidden="true"
+//     >
+//       <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+//     </svg>
+//   );
+// }
+
+
+
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import {
+  Search,
+  ShieldCheck,
+  Wrench,
+  RefreshCw,
+  ChevronDown,
+  MapPin,
+  Truck,
+  Zap,
+  Package,
+  CheckCircle2,
+  Lock,
+  ArrowRight,
+  Smartphone,
+  Shield,
+  AlertCircle,
+} from "lucide-react";
+import { apiService } from "@/services/api";
+
+interface ImeiTeaserResult {
+  model: string;
+  identifier?: string;
+  imei?: string;
+}
+
+export default function LandingPage() {
+  // IMEI Search State
+  const [imeiQuery, setImeiQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResult, setSearchResult] = useState<ImeiTeaserResult | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  // FAQ State
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const handleImeiSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanedImei = imeiQuery.trim();
+    if (!cleanedImei || cleanedImei.length !== 15) {
+      setSearchError("Please enter a valid 15-digit IMEI number.");
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+    setSearchResult(null);
+
+    try {
+      const data = await apiService.checkImei(cleanedImei);
+      setSearchResult(data);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to identify device.";
+      setSearchError(message);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const faqs = [
+    {
+      question: "Do you use original Apple parts?",
+      answer:
+        "We offer two options: Premium OEM parts (original specifications) and Standard Aftermarket parts. We will always clearly explain the difference and let you choose what fits your budget.",
+    },
+    {
+      question: "Will I lose my data during a repair?",
+      answer:
+        "For standard repairs like screens and batteries, your data is 100% safe. However, for logic board micro-soldering or severe water damage, data loss is possible. We always recommend backing up your device before sending it to our physical lab.",
+    },
+    {
+      question: "How does the swap (trade-in) work?",
+      answer:
+        "Use our online swap calculator to get an estimated value for your current device. Once approved, that value is deducted from the price of the UK Used device you want to upgrade to!",
+    },
+    {
+      question: "How long does a typical repair take?",
+      answer:
+        "Most screen and battery replacements are completed within 1-2 hours of receiving the device. Logic board repairs and water damage recovery require 24-48 hours for thorough diagnostic testing.",
+    },
+  ];
+
+  const resolvedImei =
+    searchResult?.identifier || searchResult?.imei || imeiQuery;
+
+  return (
+    <div className="w-full flex flex-col">
+      {/* 1. HERO SECTION */}
+      <section className="pt-20 pb-24 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
+        <div className="max-w-5xl mx-auto">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-apple-blue/10 text-apple-blue font-semibold text-sm mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <SparklesIcon className="w-4 h-4 mr-2" />
+            <span className="inline-flex items-center gap-2">
+              Lagos Lab
+              <span className="w-1 h-1 rounded-full bg-current opacity-50" aria-hidden="true" />
+              Insured Nationwide Waybill
+            </span>
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-apple-dark mb-6 leading-tight animate-in fade-in slide-in-from-bottom-6 duration-700">
+            Expert care for your <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+              Apple devices.
+            </span>
+          </h1>
+
+          <p className="text-lg md:text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+            From precision micro-soldering to instant UK Used swaps. Lock in upfront quotes, 
+            track your repair in real time, and stay covered with a 90-day warranty.
+          </p>
+
+          <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-200">
+            <Link
+              href="/book"
+              className="w-full sm:w-auto bg-apple-dark text-white px-8 py-4 rounded-full font-bold hover:bg-black transition-all hover:scale-105 shadow-lg"
+            >
+              Book a Repair
+            </Link>
+            <Link
+              href="/trade-in"
+              className="w-full sm:w-auto bg-white text-apple-dark border-2 border-gray-200 px-8 py-4 rounded-full font-bold hover:border-apple-dark hover:bg-gray-50 transition-all flex items-center justify-center"
+            >
+              Swap a Device <RefreshCw className="w-4 h-4 ml-2" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. IMEI SECURITY REPORT (THE TENTPOLE FEATURE) */}
+      <section
+        id="imei-report"
+        className="py-20 bg-apple-dark text-white relative overflow-hidden scroll-mt-16"
+      >
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Shield className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">
+            IMEI Security Report
+          </h2>
+          <p className="text-gray-400 mb-10 text-lg max-w-2xl mx-auto">
+            Buying a UK Used phone? Don&apos;t risk buying a stolen or locked
+            device. Enter the 15-digit IMEI to instantly verify the model and
+            unlock a premium security audit.
+          </p>
+
+          <form
+            onSubmit={handleImeiSearch}
+            className="relative max-w-2xl mx-auto mb-4"
+          >
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="\d{15}"
+              maxLength={15}
+              aria-label="Enter 15-digit IMEI number"
+              value={imeiQuery}
+              onChange={(e) =>
+                setImeiQuery(e.target.value.replace(/\D/g, "").slice(0, 15))
+              }
+              placeholder="Enter 15-digit IMEI number..."
+              className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-apple-blue focus:ring-2 focus:ring-apple-blue/50 rounded-full pl-16 pr-36 py-5 text-lg text-white placeholder-gray-500 outline-none transition-all shadow-inner"
+            />
+            <button
+              type="submit"
+              disabled={isSearching || imeiQuery.length !== 15}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-apple-blue text-white px-6 py-3 rounded-full font-bold hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-apple-blue flex items-center"
+            >
+              {isSearching ? (
+                <span className="animate-pulse">Verifying...</span>
+              ) : (
+                "Verify Free"
+              )}
+            </button>
+          </form>
+          <p className="text-xs text-gray-500">
+            {imeiQuery.length}/15 digits entered
+          </p>
+
+          {searchError && (
+            <div className="mt-6 inline-flex items-center bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-3 rounded-full text-sm font-medium animate-in fade-in">
+              <AlertCircle className="w-4 h-4 mr-2 shrink-0" />
+              {searchError}
+            </div>
+          )}
+
+          {/* Instant Gratification Teaser Result */}
+          {searchResult && (
+            <div className="mt-10 bg-white text-apple-dark rounded-3xl p-8 max-w-2xl mx-auto shadow-2xl animate-in zoom-in-95 duration-500">
+              <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-6 h-6 text-green-500" />
+              </div>
+              <h3 className="text-2xl font-bold mb-1">
+                Device Detected Successfully
+              </h3>
+              <p className="text-gray-500 mb-6 font-medium">
+                {searchResult.model} &bull; {resolvedImei}
+              </p>
+
+              <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100 mb-8 text-left max-w-md mx-auto">
+                <p className="font-bold text-blue-900 flex items-center mb-3">
+                  <Lock className="w-4 h-4 mr-2" /> Locked Premium Data:
+                </p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <ShieldCheck className="w-4 h-4 mr-2 text-gray-400 shrink-0" />{" "}
+                    Global Blacklist &amp; Stolen Status
+                  </li>
+                  <li className="flex items-center">
+                    <ShieldCheck className="w-4 h-4 mr-2 text-gray-400 shrink-0" />{" "}
+                    iCloud Activation Lock (Find My)
+                  </li>
+                  <li className="flex items-center">
+                    <ShieldCheck className="w-4 h-4 mr-2 text-gray-400 shrink-0" />{" "}
+                    Network Carrier &amp; SIM Lock Data
+                  </li>
+                  <li className="flex items-center">
+                    <ShieldCheck className="w-4 h-4 mr-2 text-gray-400 shrink-0" />{" "}
+                    Outstanding Financial Contracts
+                  </li>
+                </ul>
+              </div>
+
+              <Link
+                href={"/report?imei=" + encodeURIComponent(resolvedImei)}
+                className="w-full sm:w-auto inline-flex items-center justify-center bg-apple-dark text-white px-8 py-4 rounded-full font-bold hover:bg-black transition-all hover:scale-105 shadow-lg group"
+              >
+                Unlock Full Security Audit (₦2,000)
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 3. LOGISTICS & DELIVERY (NATIONWIDE SECTION) */}
+      <section
+        className="py-24 bg-gray-50 border-y border-gray-200/50"
+        id="logistics"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-apple-dark mb-4 tracking-tight">
+              We come to you, wherever you are.
+            </h2>
+            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+              From beating Lekki traffic to managing out-of-state logistics,
+              we&apos;ve built a premium delivery network so you can get your
+              device fixed without the stress.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Lagos Operations Card */}
+            <div className="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-gray-200 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-apple-blue/10 rounded-2xl flex items-center justify-center mb-8">
+                  <MapPin className="w-7 h-7 text-apple-blue" />
+                </div>
+
+                <h3 className="text-2xl font-bold text-apple-dark mb-3">
+                  Within Lagos
+                </h3>
+                <p className="text-gray-500 mb-8 leading-relaxed">
+                  Experience our premium local services. Drop by our physical
+                  lab, or let our engineers come directly to you.
+                </p>
+
+                <ul className="space-y-5 mb-10">
+                  <li className="flex items-start">
+                    <div className="bg-gray-100 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+                      <CheckCircle2 className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-apple-dark text-sm">
+                        Walk-in to Lab (Free)
+                      </h4>
+                      <p className="text-xs text-gray-500">
+                        Visit our secure facility in the Ajah/Lekki axis.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="bg-blue-50 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+                      <Truck className="w-4 h-4 text-apple-blue" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-apple-dark text-sm">
+                        VIP Dispatch (+₦5,000)
+                      </h4>
+                      <p className="text-xs text-gray-500">
+                        Secure pickup and return to your home or office.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="bg-yellow-50 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+                      <Zap className="w-4 h-4 text-yellow-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-apple-dark text-sm">
+                        Home/Office Visit (+₦20,000)
+                      </h4>
+                      <p className="text-xs text-gray-500">
+                        An engineer fixes it right in front of you.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+
+                <Link
+                  href="/book"
+                  className="inline-flex items-center text-apple-blue font-bold hover:underline"
+                >
+                  Book a Lagos Repair <ArrowRight className="w-4 h-4 ml-1" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Nationwide Operations Card */}
+            <div className="bg-apple-dark text-white rounded-3xl p-8 md:p-10 shadow-xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-8">
+                  <Package className="w-7 h-7 text-white" />
+                </div>
+
+                <h3 className="text-2xl font-bold mb-3">
+                  Outside Lagos (Nationwide)
+                </h3>
+                <p className="text-gray-400 mb-8 leading-relaxed">
+                  Securely mail your device to us from anywhere in Nigeria. We
+                  fix it on camera and ship it right back to you.
+                </p>
+
+                <ul className="space-y-5 mb-10">
+                  <li className="flex items-start">
+                    <div className="bg-white/10 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+                      <Smartphone className="w-4 h-4 text-gray-300" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">
+                        Book Online
+                      </h4>
+                      <p className="text-xs text-gray-400">
+                        Generate a secure Ticket ID and terminal address.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="bg-white/10 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+                      <Shield className="w-4 h-4 text-green-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">
+                        Ship via Trusted Partners
+                      </h4>
+                      <p className="text-xs text-gray-400">
+                        We partner with GIGL, DHL, GUO, and ABC Transport.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="bg-white/10 p-2 rounded-full mr-4 mt-0.5 shrink-0">
+                      <CheckCircle2 className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">
+                        Repair &amp; Return
+                      </h4>
+                      <p className="text-xs text-gray-400">
+                        We fix it, verify it, and waybill it back safely.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+
+                <Link
+                  href="/waybill"
+                  className="inline-flex items-center bg-white text-apple-dark px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors"
+                >
+                  View Waybill Guide
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. OUR SERVICES GRID */}
+      <section className="py-24 bg-white scroll-mt-16" id="services">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-apple-dark mb-4">
+              Precision Services
+            </h2>
+            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+              Equipped with logic board schematics and premium parts, we handle
+              what other shops can&apos;t.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-gray-50 rounded-3xl p-8 hover:shadow-md transition-shadow border border-gray-100">
+              <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-apple-dark mb-3">
+                Screen &amp; Battery
+              </h3>
+              <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                Restore your device to factory feel. We offer both Premium OEM
+                (True Tone retained) and standard aftermarket options.
+              </p>
+              <Link
+                href="/book"
+                className="text-sm font-bold text-apple-blue hover:underline"
+              >
+                Book Replacement &rarr;
+              </Link>
+            </div>
+
+            <div className="bg-gray-50 rounded-3xl p-8 hover:shadow-md transition-shadow border border-gray-100">
+              <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                <Wrench className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-apple-dark mb-3">
+                Micro-Soldering
+              </h3>
+              <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                Dead logic boards, water damage, and Face ID failures. We go
+                down to the component level to save your device.
+              </p>
+              <Link
+                href="/book"
+                className="text-sm font-bold text-purple-600 hover:underline"
+              >
+                Book Diagnostics &rarr;
+              </Link>
+            </div>
+
+            <div className="bg-gray-50 rounded-3xl p-8 hover:shadow-md transition-shadow border border-gray-100">
+              <div className="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-6">
+                <RefreshCw className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-apple-dark mb-3">
+                Swap &amp; Upgrade
+              </h3>
+              <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                Don&apos;t want to fix it? Trade in your damaged or older device
+                for credit toward a pristine UK Used upgrade.
+              </p>
+              <Link
+                href="/trade-in"
+                className="text-sm font-bold text-green-600 hover:underline"
+              >
+                Get an Offer &rarr;
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. FAQ SECTION */}
+      <section className="py-24 bg-apple-gray" id="faq">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-apple-dark mb-4 tracking-tight">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-gray-500">
+              Everything you need to know about our repair and swap process.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all duration-300"
+              >
+                <button
+                  type="button"
+                  aria-expanded={openFaq === index}
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                  className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
+                >
+                  <span className="font-semibold text-apple-dark pr-4">
+                    {faq.question}
+                  </span>
+                  <ChevronDown
+                    className={
+                      "w-5 h-5 text-gray-400 transition-transform duration-300 shrink-0 " +
+                      (openFaq === index ? "rotate-180" : "")
+                    }
+                  />
+                </button>
+                <div
+                  className={
+                    "overflow-hidden transition-all duration-300 ease-in-out " +
+                    (openFaq === index
+                      ? "max-h-48 opacity-100"
+                      : "max-h-0 opacity-0")
+                  }
+                >
+                  <p className="px-6 pb-6 text-sm text-gray-500 leading-relaxed">
+                    {faq.answer}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-gray-500 text-sm mb-4">Still have questions?</p>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("open-chat"))}
+              className="bg-white border border-gray-200 text-apple-dark px-6 py-3 rounded-full font-semibold hover:border-apple-dark transition-colors shadow-sm"
+            >
+              Ask our AI Genius
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+      <path d="M20 3v4" />
+      <path d="M22 5h-4" />
+      <path d="M4 17v2" />
+      <path d="M5 18H3" />
+    </svg>
+  );
+}
