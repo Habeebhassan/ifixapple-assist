@@ -690,7 +690,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 2. IMEI SECURITY REPORT (THE TENTPOLE FEATURE) */}
+      {/* 2. IMEI SECURITY REPORT (TH TENTPOLE FEATURE) */}
       <section
         id="imei-report"
         className="py-20 bg-apple-dark text-white relative overflow-hidden scroll-mt-16"
